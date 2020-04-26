@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block head_title %}Budget {% block head_title_budget %}{% endblock %}{% endblock %}
+{% block head %}{% block head_budget %}{% endblock %}{% endblock %}
+{% block content %}
+    <div class="btn-group btn-group-lg" role="group">
+        <a href="{% url 'monthly_view' %}" role="button" class="btn btn-default">Monthly</a>
+        <a href="{% url 'yearly_view' %}" role="button" class="btn btn-default">Yearly</a>
+    </div>
+    <div class="btn-group btn-group-sm" role="group">
+        <a href="{% url 'add_account_view' %}" role="button" class="btn btn-default">Account</a>
+        <a href="{% url 'add_category_view' %}" role="button" class="btn btn-default">Category</a>
+        <a href="{% url 'add_subcategory_view' %}" role="button" class="btn btn-default">Subcategory</a>
+        <a href="{% url 'add_budget_view' %}" role="button" class="btn btn-default">Budget</a>
+        <a href="{% url 'add_transaction_view' %}" role="button" class="btn btn-default">Transaction</a>
+    </div>
+    <hr>
+    {% block content_budget %}
+    {% endblock %}
+{% endblock %}

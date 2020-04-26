@@ -1,0 +1,54 @@
+{% extends "budget/base.html" %}
+{% block head_title_budget %}Add {{ title }}{% endblock %}
+{% block head_budget %}
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+{% endblock %}
+{% block content_budget %}
+<h4 class="page-header"><small>add: </small>{{ title }}</h4><hr>
+<form class="form-group" method="POST"> {% csrf_token %}
+    {% for key, value in form2.items %}
+    <label for="{{ key }}_id">{{ key }}:</label>
+    <select name="{{ key }}" id="{{ key }}_id">
+        {% for option in value %}
+        <option value="{{ option }}">{{ option }}</option>
+        {% endfor %}
+    </select><br>
+    {% endfor %}
+    {{ form.as_p }}
+    <button class="btn btn-success btn-sm" type="submit">add</button>
+</form>
+<br>
+<table class="table table-hover table-condensed table-responsive">
+    <thead>
+        <tr>
+            {% for col in table.cols %}
+            <th>
+                {% if col != 'ID' %}{{ col }}{% endif %}
+            </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in table.rows %}
+        <tr>
+            {% for col in row %}
+            <td>
+                {% if col.is_id %}
+                    <a class="text-warning" href="{% url update_url pk=col.value %}">
+                        <span class="far fa-edit"></span>
+                    </a> &nbsp;
+                    {% if title == 'Transaction' or title == 'Budget' %}
+                        <a class="text-danger" href="{% url delete_url pk=col.value %}">
+                            <span class="far fa-trash-alt"></span>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    {{ col.value }}
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

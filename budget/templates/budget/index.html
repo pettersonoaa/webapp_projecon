@@ -1,0 +1,106 @@
+{% extends "budget/base.html" %}
+{% block head_title_budget %}{{ title }}{% endblock %}
+{% block head_budget %}
+<style>
+
+    .wrapper {
+    position: relative;
+    overflow: auto;
+    white-space: nowrap;
+    }
+
+    .sticky-col {
+    position: sticky;
+    position: -webkit-sticky;
+    background-color: white;
+    }
+
+    .Account-col {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+    left: 0px;
+    }
+
+    .IO-col {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    left: 80px;
+    }
+
+    .Category-col {
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+    left: 130px;
+    }
+
+    .Subcategory-col {
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    left: 250px;
+    }
+
+    th:hover {
+    background-color: #ebebeb;
+    }
+
+</style>
+{% endblock %}
+{% block content_budget %}
+<h3 class="page-header">{{ title }} View</h3><hr>
+<div class="wrapper">
+    <table class="table table-hover table-condensed table-responsive">
+        <thead>
+            <tr>
+            {% for col in pivot_table.cols %}
+                {% if col.is_atribute %}
+                <th class="sticky-col {{ col.sticky }}-col" scope="col">{{ col.atribute }}</th>
+                {% else %}
+                <th scope="col">{{ col.date }}</th>
+                {% endif %}
+            {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in pivot_table.rows %}
+            <tr>
+                {% for col in row %}
+                    {% if col.is_atribute %}
+                    <th class="sticky-col {{ col.sticky }}-col" scope="row">{{ col.atribute }}</th>
+                    {% else %}
+                    <td>
+                    {% if col.transaction != 0 %}
+                        {{ col.transaction }} 
+                        <small>
+                            <div class="text-secondary">
+                                {% if title == 'Monthly' %}
+                                <a class="text-secondary" href="{% url 'update_budget_view' pk=col.budget_id %}">{{ col.budget }}</a>
+                                {% else %}
+                                <a class="text-secondary">{{ col.budget }}</a>
+                                {% endif %}
+                            </div>
+                        </small>
+                        <div class="progress" style="height: 2px;">
+                            <div class="progress-bar bg-{{col.ratio_color}}"  role="progressbar" style="{{col.ratio_style}}"></div>
+                        </div>
+                    {% else %}
+                        <div class="text-secondary">
+                            {% if title == 'Monthly' %}
+                            <a class="text-secondary" href="{% url 'update_budget_view' pk=col.budget_id %}">{{ col.budget }}</a>
+                            {% else %}
+                            <a class="text-secondary">{{ col.budget }}</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

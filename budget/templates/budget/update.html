@@ -1,0 +1,9 @@
+{% extends "budget/base.html" %}
+{% block head_title_budget %}Update {{ title }}{% endblock %}
+{% block content_budget %}
+<h4 class="page-header"><small>update: </small>{{ title }}</h4><hr>
+<form class="form-group" method="POST"> {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-warning btn-sm" type="submit">update</button>    
+</form>
+{% endblock %}

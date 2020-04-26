@@ -1,0 +1,9 @@
+{% extends "budget/base.html" %}
+{% block head_title_budget %}Delete {{ title }}{% endblock %}
+{% block content_budget %}
+<h4 class="page-header"><small>delete: </small>{{ title }}</h4><hr>
+<form class="form-group" method="POST"> {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-danger btn-sm" type="submit">delete</button>    
+</form>
+{% endblock %}
