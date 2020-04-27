@@ -28,7 +28,7 @@ SECRET_KEY = 'nn)*plot=_mth@91^8c3n_%j@#7-$+6j4cf2igl#q%tsv+^l$d'
 DEBUG = int(os.environ.get('DEBUG', default=1)) 
 
 #ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['projecon.herokuapp.com']
+ALLOWED_HOSTS = ['projecon.herokuapp.com', '127.0.0.1']
 
 LOGIN_URL = '/accounts/login'
 
