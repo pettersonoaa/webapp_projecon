@@ -27,7 +27,8 @@ SECRET_KEY = 'nn)*plot=_mth@91^8c3n_%j@#7-$+6j4cf2igl#q%tsv+^l$d'
 # DEBUG can be True/False or 1/0
 DEBUG = int(os.environ.get('DEBUG', default=1)) 
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['projecon.herokuapp.com']
 
 LOGIN_URL = '/accounts/login'
 
@@ -87,6 +88,15 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+"""
+Heroku database settings. 
+"""
+
+import dj_database_url
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
+DATABASES['default']['CONN_MAX_AGE'] = 500
 
 
 # Password validation
