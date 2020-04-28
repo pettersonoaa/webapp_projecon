@@ -23,14 +23,11 @@ from .forms import (
     DeleteBudgetModelForm,
     DeleteTransactionModelForm
 ) 
-from .queries import PivotTable
 from .functions import (
     MakeTableDict,
     ModelGroupBy,
     DictPivotTable
 )
-
-
 
 
 

@@ -120,7 +120,6 @@ def DictPivotTable (user, year=True, month=True, day=False):
                     'budget': rows[c-1],
                     'ratio': ratio,
                     'ratio_color': ratio_color,
-                    'ratio_style': 'width:'+str(ratio)+'%;'
                 }
                 dict_row.append(dict_dummy)
             c += 1
