@@ -33,6 +33,13 @@ from .functions import (
 
 
 @login_required
+def index_view(request):
+    return redirect('monthly_view')
+
+
+
+
+@login_required
 def monthly_view(request):
     #GET_DATE_FROM_USER = ['202003', '202004']
     context = {
