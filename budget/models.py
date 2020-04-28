@@ -53,3 +53,4 @@ class Transaction(models.Model):
     io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES)
     value = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField()
+    

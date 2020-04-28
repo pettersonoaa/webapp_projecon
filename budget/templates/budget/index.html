@@ -77,7 +77,7 @@
                         <small>
                             <div class="text-secondary">
                                 {% if title == 'Monthly' %}
-                                <a class="text-secondary" href="{% url 'update_budget_view' pk=col.budget_id %}">{{ col.budget }}</a>
+                                <a class="text-secondary">{{ col.budget }}</a>
                                 {% else %}
                                 <a class="text-secondary">{{ col.budget }}</a>
                                 {% endif %}
@@ -89,7 +89,7 @@
                     {% else %}
                         <div class="text-secondary">
                             {% if title == 'Monthly' %}
-                            <a class="text-secondary" href="{% url 'update_budget_view' pk=col.budget_id %}">{{ col.budget }}</a>
+                            <a class="text-secondary">{{ col.budget }}</a>
                             {% else %}
                             <a class="text-secondary">{{ col.budget }}</a>
                             {% endif %}

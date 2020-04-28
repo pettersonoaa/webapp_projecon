@@ -1,6 +1,8 @@
 from datetime import date
+from pandas import merge
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.db.models import Avg, Sum, Max, Min, Count
 from .models import (
     Category, 
     Subcategory, 
@@ -22,7 +24,11 @@ from .forms import (
     DeleteTransactionModelForm
 ) 
 from .queries import PivotTable
-from .functions import MakeTableDict
+from .functions import (
+    MakeTableDict,
+    ModelGroupBy,
+    DictPivotTable
+)
 
 
 
@@ -32,20 +38,17 @@ from .functions import MakeTableDict
 @login_required
 def monthly_view(request):
     #GET_DATE_FROM_USER = ['202003', '202004']
-    texto = 'abcde'
-    print(texto[-3:])
     context = {
         'title': 'Monthly',
-        'pivot_table': PivotTable(request.user.id, date_format_in='%Y%m', date_format_out='%b%y')
+        'pivot_table': DictPivotTable(request.user, month=True)
     }
     return render(request, 'budget/index.html', context)
 
 @login_required
 def yearly_view(request):
-    #GET_DATE_FROM_USER = ['202003', '202004']
     context = {
         'title': 'Yearly',
-        'pivot_table': PivotTable(request.user.id, date_format_in='%Y', date_format_out='%Y')
+        'pivot_table': DictPivotTable(request.user, month=False)
     }
     return render(request, 'budget/index.html', context)
 
