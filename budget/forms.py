@@ -5,7 +5,7 @@ from .models import Category, Subcategory, Account, Budget, Transaction
 class CategoryModelForm(ModelForm):
     class Meta:
         model = Category
-        fields = ['name', 'detail']
+        fields = ['name', 'detail', 'order']
         widgets = {
             'detail': TextInput(attrs={'size': 20})
         }
@@ -13,7 +13,7 @@ class CategoryModelForm(ModelForm):
 class SubcategoryModelForm(ModelForm):
     class Meta:
         model = Subcategory
-        fields = ['name', 'detail', 'is_shared', 'is_active']
+        fields = ['name', 'detail', 'order', 'is_shared', 'is_active']
         widgets = {
             'detail': TextInput(attrs={'size': 20})
         }
@@ -21,7 +21,7 @@ class SubcategoryModelForm(ModelForm):
 class AccountModelForm(ModelForm):
     class Meta:
         model = Account
-        fields = ['name', 'detail']
+        fields = ['name', 'detail', 'order']
         widgets = {
             'detail': TextInput(attrs={'size': 20})
         }

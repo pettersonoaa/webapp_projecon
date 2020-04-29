@@ -76,8 +76,8 @@ def add_category_view(request):
         form = CategoryModelForm()
     
     # build table
-    model = Category.objects.filter(user=user).values('name', 'id')
-    table = MakeTableDict(model=model, col_names=['Category', 'ID'])
+    model = Category.objects.filter(user=user).values('name', 'order', 'id').order_by('order', 'name')
+    table = MakeTableDict(model=model, col_names=['Category', 'Order', 'ID'])
 
     # render
     context = {
@@ -109,9 +109,9 @@ def add_subcategory_view(request):
     
     # build table
     model = Subcategory.objects.filter(user=user).values(
-        'category__name', 'name', 'is_shared', 'is_active', 'detail', 'id'
-        )
-    col_names = ['Category', 'Subcategory', 'Share bills', 'Active bill', 'Details', 'ID']
+        'category__name', 'name', 'is_shared', 'is_active', 'detail', 'order', 'id'
+        ).order_by('order', 'category__name', 'name')
+    col_names = ['Category', 'Subcategory', 'Share bills', 'Active bill', 'Details', 'Order', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
     # render
@@ -139,8 +139,8 @@ def add_account_view(request):
         form = AccountModelForm()
     
     # build table
-    model = Account.objects.filter(user=user).values('name', 'id')
-    table = MakeTableDict(model=model, col_names=['Account', 'ID'])
+    model = Account.objects.filter(user=user).values('name', 'order', 'id').order_by('order', 'name')
+    table = MakeTableDict(model=model, col_names=['Account', 'Order', 'ID'])
 
     # render
     context = {
@@ -291,7 +291,7 @@ def update_budget_view(request, pk):
     form = UpdateBudgetModelForm(request.POST or None, instance=model)
     if request.method == 'POST':
         form.save()
-        return redirect('monthly_view')
+        return redirect('add_budget_view')
     context = {
         'title': 'Budget',
         'form': form

@@ -15,6 +15,7 @@ class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=60)
     detail = models.TextField(max_length=100, null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
     def __str__(self):
         return self.name
 
@@ -25,6 +26,7 @@ class Subcategory(models.Model):
     is_shared = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     detail = models.TextField(max_length=100, null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
     def __str__(self):
         return self.name
 
@@ -32,6 +34,7 @@ class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=60)
     detail = models.TextField(max_length=100, null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
     def __str__(self):
         return self.name
 
