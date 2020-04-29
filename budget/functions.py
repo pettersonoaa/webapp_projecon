@@ -72,7 +72,7 @@ def DictPivotTable (user, year=True, month=True, day=False):
         suffixes=('_budget', '_transaction'),
         how='outer', 
         on=model_columns
-    ).fillna(0).set_index(model_columns).unstack('date')
+    ).set_index(model_columns).unstack('date').fillna(0)
     df = df.swaplevel(0, 1, axis=1).sort_index(axis=1).reset_index().rename(columns=COLUMNS_LABEL)
 
     # populate dict

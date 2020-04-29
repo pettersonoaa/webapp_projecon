@@ -1,4 +1,4 @@
-from django.forms import ModelForm, HiddenInput, SelectDateWidget
+from django.forms import ModelForm, HiddenInput, SelectDateWidget, TextInput
 from .models import Category, Subcategory, Account, Budget, Transaction
 
 
@@ -6,16 +6,25 @@ class CategoryModelForm(ModelForm):
     class Meta:
         model = Category
         fields = ['name', 'detail']
+        widgets = {
+            'detail': TextInput(attrs={'size': 20})
+        }
 
 class SubcategoryModelForm(ModelForm):
     class Meta:
         model = Subcategory
-        fields = ['name', 'detail', 'is_shared']
+        fields = ['name', 'detail', 'is_shared', 'is_active']
+        widgets = {
+            'detail': TextInput(attrs={'size': 20})
+        }
 
 class AccountModelForm(ModelForm):
     class Meta:
         model = Account
         fields = ['name', 'detail']
+        widgets = {
+            'detail': TextInput(attrs={'size': 20})
+        }
 
 class BudgetModelForm(ModelForm):
     class Meta:
@@ -29,6 +38,9 @@ class TransactionModelForm(ModelForm):
     class Meta:
         model = Transaction
         fields = ['io_type', 'value', 'date']
+        widgets = {
+            'date': SelectDateWidget(empty_label="Nothing")
+        }
 
 
 

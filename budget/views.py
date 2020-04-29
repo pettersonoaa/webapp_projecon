@@ -109,9 +109,9 @@ def add_subcategory_view(request):
     
     # build table
     model = Subcategory.objects.filter(user=user).values(
-        'category__name', 'name', 'is_shared', 'detail', 'id'
+        'category__name', 'name', 'is_shared', 'is_active', 'detail', 'id'
         )
-    col_names = ['Category', 'Subcategory', 'Share bills', 'Details', 'ID']
+    col_names = ['Category', 'Subcategory', 'Share bills', 'Active bill', 'Details', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
     # render
