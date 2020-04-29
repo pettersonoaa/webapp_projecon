@@ -3,7 +3,7 @@
 {% block head_budget %}
 {% endblock %}
 {% block content_budget %}
-<h4 class="page-header"><small>add: </small>{{ title }}</h4><hr>
+<h4><small>add: </small>{{ title }}</h4><hr>
 <form class="form-group" method="POST"> {% csrf_token %}
     {% for key, value in form2.items %}
     <label for="{{ key }}_id">{{ key }}:</label>
