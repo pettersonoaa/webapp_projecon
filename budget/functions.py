@@ -83,10 +83,10 @@ def DictPivotTable (user, year=True, month=True, day=False):
         on=model_columns
     ).set_index(model_columns).unstack('date').fillna(0)
     df = df.swaplevel(0, 1, axis=1).sort_index(axis=1).reset_index().rename(columns=COLUMNS_LABEL)
-    df = df.drop(columns=['account__order' ,'category__order', 'subcategory__order'])
+    df = df.drop(columns=['account__order' ,'category__order', 'subcategory__order'], level=0)
 
     # populate dict
-    df_dict = {'cols': [],'rows': []}
+    df_dict = {'cols': [], 'balance': [], 'rows': []}
     if year and month and day:
         date_format_in, date_format_out = '%Y-%m-%d', '%a%d'
     elif year and month:
@@ -105,6 +105,58 @@ def DictPivotTable (user, year=True, month=True, day=False):
             date_label = date_label.strftime(date_format_out)
             df_dict['cols'].append({'is_atribute': False, 'date': date_label})
     
+    # balance
+    balance = {
+        'in': {'transaction': {}, 'budget': {}},
+        'out': {'transaction': {}, 'budget': {}}
+    }
+    for col in df.columns.values:
+        if col[1] == 'value__sum_transaction':
+            for io_type in balance:
+                for value in balance[io_type]:
+                    balance[io_type][value][col[0]] = 0
+    for rows in df.values.tolist():
+        c = 0
+        io_type = 'in'
+        if 'out' in rows:
+            io_type = 'out'
+        for col in df.columns.values:
+            if col[1] == 'value__sum_transaction':
+                balance[io_type]['transaction'][col[0]] += rows[c]
+                balance[io_type]['budget'][col[0]] += rows[c-1]
+            c += 1
+    for io_type in balance:
+        c = 0
+        ratio = 0
+        dict_row = []
+        for col in df.columns.values:
+            if col[1] == '':
+                if col[0] == 'IO':
+                    dict_row.append({'is_atribute': True, 'atribute': io_type, 'sticky': col[0]})
+                else:
+                    dict_row.append({'is_atribute': True, 'atribute': '', 'sticky': col[0]})
+            elif col[1] == 'value__sum_transaction':
+                try:
+                    ratio = int(balance[io_type]['transaction'][col[0]] / balance[io_type]['budget'][col[0]] * 100)
+                except:
+                    ratio = 100
+                if ratio < 99:
+                    ratio_color = 'warning'
+                elif ratio > 100:
+                    ratio_color = 'danger'
+                else:
+                    ratio_color = 'success'
+                dict_dummy = {
+                    'is_atribute': False,
+                    'transaction': balance[io_type]['transaction'][col[0]],
+                    'budget': balance[io_type]['budget'][col[0]],
+                    'ratio': ratio,
+                    'ratio_color': ratio_color,
+                }
+                dict_row.append(dict_dummy)
+            c += 1
+        df_dict['balance'].append(dict_row)
+
     # rows
     for rows in df.values.tolist():
         c = 0

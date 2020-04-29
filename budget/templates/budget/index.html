@@ -52,7 +52,7 @@
 {% block content_budget %}
 <h3 class="page-header">{{ title }} View</h3><hr>
 <div class="wrapper">
-    <table class="table table-hover table-condensed table-responsive">
+    <table class="table table-sm table-hover table-condensed table-responsive">
         <thead>
             <tr>
             {% for col in pivot_table.cols %}
@@ -63,6 +63,41 @@
                 {% endif %}
             {% endfor %}
             </tr>
+            {% for row in pivot_table.balance %}
+            <tr>
+                {% for col in row %}
+                    {% if col.is_atribute %}
+                    <th class="sticky-col {{ col.sticky }}-col" scope="row">{{ col.atribute }}</th>
+                    {% else %}
+                    <th>
+                    {% if col.transaction != 0 %}
+                        {{ col.transaction|floatformat:"0" }} 
+                        <small>
+                            <div class="text-secondary">
+                                {% if title == 'Monthly' %}
+                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
+                                {% else %}
+                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
+                                {% endif %}
+                            </div>
+                        </small>
+                        <div class="progress" style="height: 2px;">
+                            <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
+                        </div>
+                    {% else %}
+                        <div class="text-secondary">
+                            {% if title == 'Monthly' %}
+                            <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
+                            {% else %}
+                            <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    </th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
         </thead>
         <tbody>
             {% for row in pivot_table.rows %}
