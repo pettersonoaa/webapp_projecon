@@ -30,15 +30,15 @@ def MakeTableDict (model, col_names=[]):
 def ModelGroupBy (Model, user, year=True, month=True, day=False):
     if year and month and day:
         grouped_model = Model.objects.filter(user=user).values(
-            'account__order' ,'category__order', 'subcategory__order',
-            'account__name', 'io_type', 'category__name', 'subcategory__name',
+            'account__order', 'account__name', 'io_type', 
+            'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
     elif year and month:
         grouped_model = Model.objects.filter(user=user).values(
-            'account__order' ,'category__order', 'subcategory__order',
-            'account__name', 'io_type', 'category__name', 'subcategory__name',
+            'account__order', 'account__name', 'io_type', 
+            'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date__year', 'date__month'
         ).annotate(Sum('value'))
         df = DataFrame(grouped_model)
@@ -46,22 +46,22 @@ def ModelGroupBy (Model, user, year=True, month=True, day=False):
         return df.drop(columns=['date__year', 'date__month'])
     elif year:
         grouped_model = Model.objects.filter(user=user).values(
-            'account__order' ,'category__order', 'subcategory__order',
-            'account__name', 'io_type', 'category__name', 'subcategory__name',
+            'account__order', 'account__name', 'io_type', 
+            'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date__year'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__year': 'date'})
     elif month:
         grouped_model = Model.objects.filter(user=user).values(
-            'account__order' ,'category__order', 'subcategory__order',
-            'account__name', 'io_type', 'category__name', 'subcategory__name',
+            'account__order', 'account__name', 'io_type', 
+            'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date__month'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__month': 'date'})
     else:
         grouped_model = Model.objects.filter(user=user).values(
-            'account__order' ,'category__order', 'subcategory__order',
-            'account__name', 'io_type', 'category__name', 'subcategory__name'
+            'account__order', 'account__name', 'io_type', 
+            'category__order','category__name', 'subcategory__order','subcategory__name'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
         
@@ -71,8 +71,9 @@ def DictPivotTable (user, year=True, month=True, day=False):
     # extract aggregated data
     from .models import Budget, Transaction
     model_columns = [
-        'account__order' ,'category__order', 'subcategory__order',
-        'account__name','io_type','category__name','subcategory__name', 'date'
+        'account__order', 'account__name', 'io_type', 
+        'category__order','category__name', 'subcategory__order','subcategory__name', 
+        'date'
     ]
     df = merge(
         ModelGroupBy(Budget, user, year=year, month=month, day=day), 

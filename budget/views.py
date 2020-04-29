@@ -110,7 +110,7 @@ def add_subcategory_view(request):
     # build table
     model = Subcategory.objects.filter(user=user).values(
         'category__name', 'name', 'is_shared', 'is_active', 'detail', 'order', 'id'
-        ).order_by('order', 'category__name', 'name')
+        ).order_by('category__order', 'order', 'category__name', 'name')
     col_names = ['Category', 'Subcategory', 'Share bills', 'Active bill', 'Details', 'Order', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
@@ -176,7 +176,7 @@ def add_budget_view(request):
     # build table
     model = Budget.objects.filter(user=user).values(
         'account__name', 'category__name', 'subcategory__name', 'io_type', 'value', 'date', 'id'
-        ).order_by('-date')
+        ).order_by('-date', 'io_type', 'account__order', 'category__order', 'subcategory__order')
     col_names = ['Account', 'Category', 'Subcategory', 'Io type', 'Value', 'Date', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
@@ -227,7 +227,7 @@ def add_transaction_view(request):
     # build table
     model = Transaction.objects.filter(user=user).values(
         'account__name', 'category__name', 'subcategory__name', 'io_type', 'value', 'date', 'id'
-        ).order_by('-date')
+        ).order_by('-date', 'io_type', 'account__order', 'category__order', 'subcategory__order')
     col_names = ['Account', 'Category', 'Subcategory', 'Io type', 'Value', 'Date', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
