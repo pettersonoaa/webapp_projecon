@@ -54,7 +54,6 @@ class UpdateBudgetModelForm(ModelForm):
              'category': HiddenInput(),
              'subcategory': HiddenInput(),
              'account': HiddenInput(),
-             'io_type': HiddenInput(),
              'date': HiddenInput()
         }
 
@@ -68,7 +67,6 @@ class UpdateTransactionModelForm(ModelForm):
              'category': HiddenInput(),
              'subcategory': HiddenInput(),
              'account': HiddenInput(),
-             'io_type': HiddenInput(),
              'date': HiddenInput()
         }
 

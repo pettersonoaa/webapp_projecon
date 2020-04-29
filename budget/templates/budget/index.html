@@ -73,13 +73,13 @@
                     {% else %}
                     <td>
                     {% if col.transaction != 0 %}
-                        {{ col.transaction }} 
+                        {{ col.transaction|floatformat:"0" }} 
                         <small>
                             <div class="text-secondary">
                                 {% if title == 'Monthly' %}
-                                <a class="text-secondary">{{ col.budget }}</a>
+                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
                                 {% else %}
-                                <a class="text-secondary">{{ col.budget }}</a>
+                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
                                 {% endif %}
                             </div>
                         </small>
@@ -89,9 +89,9 @@
                     {% else %}
                         <div class="text-secondary">
                             {% if title == 'Monthly' %}
-                            <a class="text-secondary">{{ col.budget }}</a>
+                            <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
                             {% else %}
-                            <a class="text-secondary">{{ col.budget }}</a>
+                            <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
                             {% endif %}
                         </div>
                     {% endif %}
