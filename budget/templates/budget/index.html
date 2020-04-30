@@ -4,47 +4,35 @@
 <style>
 
     .wrapper {
-    position: relative;
-    overflow: auto;
-    white-space: nowrap;
+        position: relative;
+        overflow: auto;
+        white-space: nowrap;
     }
 
     .sticky-col {
-    position: sticky;
-    position: -webkit-sticky;
-    background-color: white;
+        position: sticky;
+        position: -webkit-sticky;
+        background-color: white;
     }
 
-    .Account-col {
-    width: 80px;
-    min-width: 80px;
-    max-width: 80px;
-    left: 0px;
+    .sticky-col-0 {
+        left: 0px;
     }
 
-    .IO-col {
-    width: 50px;
-    min-width: 50px;
-    max-width: 50px;
-    left: 20px;
+    .sticky-col-1 {
+        left: 20px;
     }
 
-    .Category-col {
-    width: 120px;
-    min-width: 120px;
-    max-width: 120px;
-    left: 40px;
+    .sticky-col-2 {
+        left: 40px;
     }
 
-    .Subcategory-col {
-    width: 150px;
-    min-width: 150px;
-    max-width: 150px;
-    left: 80px;
+    .sticky-col-3 {
+        left: 60px;
     }
 
     th:hover {
-    background-color: #ebebeb;
+        background-color: #ebebeb;
     }
 
 </style>
@@ -57,7 +45,7 @@
             <tr>
             {% for col in pivot_table.cols %}
                 {% if col.is_atribute %}
-                <th class="sticky-col {{ col.sticky }}-col" scope="col">{{ col.atribute }}</th>
+                <th class="sticky-col sticky-col-{{ col.sticky }}" scope="col" witdh="{{ col.width }}px" min-width="{{ col.width }}px" max-width="{{ col.width }}px" left="{{ col.left }}px">{{ col.atribute }}</th>
                 {% else %}
                 <th scope="col">{{ col.date }}</th>
                 {% endif %}
@@ -67,33 +55,21 @@
             <tr>
                 {% for col in row %}
                     {% if col.is_atribute %}
-                    <th class="sticky-col {{ col.sticky }}-col" scope="row">{{ col.atribute }}</th>
+                    <th class="align-middle sticky-col sticky-col-{{ col.sticky }}" scope="row" witdh="{{ col.width }}px" min-width="{{ col.width }}px" max-width="{{ col.width }}px" left="{{ col.left }}px">{{ col.atribute }}</th>
                     {% else %}
-                    <th>
-                    {% if col.transaction != 0 %}
-                        {{ col.transaction|floatformat:"0" }} 
-                        <small>
-                            <div class="text-secondary">
-                                {% if title == 'Monthly' %}
-                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                                {% else %}
-                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                                {% endif %}
+                        {% if col.transaction != 0 %}
+                        <th>
+                            {{ col.transaction|floatformat:"0" }} 
+                            <small><a class="text-secondary">{{ col.budget|floatformat:"0" }}</a></small>
+                            <div class="progress" style="height: 2px;">
+                                <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
                             </div>
-                        </small>
-                        <div class="progress" style="height: 2px;">
-                            <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
-                        </div>
-                    {% else %}
-                        <div class="text-secondary">
-                            {% if title == 'Monthly' %}
+                        </th>
+                        {% else %}
+                        <th class="align-top">
                             <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                            {% else %}
-                            <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                    </th>
+                        </th>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </tr>
@@ -104,32 +80,18 @@
             <tr>
                 {% for col in row %}
                     {% if col.is_atribute %}
-                    <th class="sticky-col {{ col.sticky }}-col" scope="row">{{ col.atribute }}</th>
+                    <th class="sticky-col sticky-col-{{ col.sticky }} font-weight-normal" scope="row" witdh="{{ col.width }}px" min-width="{{ col.width }}px" max-width="{{ col.width }}px" left="{{ col.left }}px">{{ col.atribute }}</th>
                     {% else %}
                     <td>
-                    {% if col.transaction != 0 %}
-                        {{ col.transaction|floatformat:"0" }} 
-                        <small>
-                            <div class="text-secondary">
-                                {% if title == 'Monthly' %}
-                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                                {% else %}
-                                <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                                {% endif %}
+                        {% if col.transaction != 0 %}
+                            {{ col.transaction|floatformat:"0" }} 
+                            <small><a class="text-secondary font-weight-light">{{ col.budget|floatformat:"0" }}</a></small>
+                            <div class="progress" style="height: 2px;">
+                                <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
                             </div>
-                        </small>
-                        <div class="progress" style="height: 2px;">
-                            <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
-                        </div>
-                    {% else %}
-                        <div class="text-secondary">
-                            {% if title == 'Monthly' %}
-                            <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                            {% else %}
-                            <a class="text-secondary">{{ col.budget|floatformat:"0" }}</a>
-                            {% endif %}
-                        </div>
-                    {% endif %}
+                        {% else %}
+                            <a class="text-secondary font-weight-light">{{ col.budget|floatformat:"0" }}</a>
+                        {% endif %}
                     </td>
                     {% endif %}
                 {% endfor %}
