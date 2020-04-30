@@ -21,8 +21,15 @@
     .sticky-col-2 {
         left: 100px;
     }
+    .sticky-col-bg-light {
+        background-color: #fafafa;
+    }
     th:hover {
         background-color: #ebebeb;
+    }
+    .tr-th-bg-light {
+        background-color: rgba(247, 247, 247, 0.3);
+        background-color: #fafafa;
     }
 </style>
 {% endblock %}
@@ -33,10 +40,10 @@
     <h6><small>Account: </small>{{ account_name }}</h6><hr>
     <table class="table table-sm table-hover table-condensed table-responsive">
         <thead>
-            <tr>
+            <tr class="tr-th-bg-light">
             {% for col in pivot_table.cols %}
                 {% if col.is_atribute %}
-                <th class="sticky-col sticky-col-{{ col.sticky }}" scope="col">{{ col.atribute }}</th>
+                <th class="sticky-col sticky-col-{{ col.sticky }} sticky-col-bg-light" scope="col">{{ col.atribute }}</th>
                 {% else %}
                 <th scope="col">{{ col.date }}</th>
                 {% endif %}
@@ -47,10 +54,10 @@
             {% for io_name, io_rows in pivot_table.rows.items %}
                 {% for total_label, rows in io_rows.items %}
                     {% for row in rows %}
-                    <tr> 
+                    <tr class="{% if total_label == 'total' %}tr-th-bg-light{% endif %}"> 
                         {% for col in row %}
                             {% if col.is_atribute %}
-                            <th class="sticky-col sticky-col-{{ col.sticky }} font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
+                            <th class="sticky-col sticky-col-{{ col.sticky }} {% if total_label == 'total' %}sticky-col-bg-light{% endif %} font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
                             {% else %}
                             <td>
                                 {% if col.transaction != 0 %}
@@ -71,10 +78,10 @@
             {% endfor %}
         </tbody>
         <tfoot>
-            <tr>
+            <tr class="tr-th-bg-light">
                 {% for col in pivot_table.balance %}
                     {% if col.is_atribute %}
-                    <th class="sticky-col sticky-col-{{ col.sticky }} font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
+                    <th class="sticky-col sticky-col-{{ col.sticky }} sticky-col-bg-light font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
                     {% else %}
                     <td>
                         {% if col.transaction_show %}
