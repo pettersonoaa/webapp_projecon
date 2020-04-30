@@ -26,7 +26,8 @@ from .forms import (
 from .functions import (
     MakeTableDict,
     ModelGroupBy,
-    DictPivotTable
+    DictPivotTable,
+    DictAccountPivotTable
 )
 
 
@@ -41,10 +42,9 @@ def index_view(request):
 
 @login_required
 def monthly_view(request):
-    #GET_DATE_FROM_USER = ['202003', '202004']
     context = {
         'title': 'Monthly',
-        'pivot_table': DictPivotTable(request.user, month=True)
+        'accounts_table': DictAccountPivotTable(request.user, month=True)
     }
     return render(request, 'budget/index.html', context)
 
@@ -52,7 +52,7 @@ def monthly_view(request):
 def yearly_view(request):
     context = {
         'title': 'Yearly',
-        'pivot_table': DictPivotTable(request.user, month=False)
+        'accounts_table': DictAccountPivotTable(request.user, month=False)
     }
     return render(request, 'budget/index.html', context)
 

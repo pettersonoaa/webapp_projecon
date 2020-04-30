@@ -17,6 +17,7 @@ COLUMNS = {
     }
 }
 
+# make table data for add template
 def MakeTableDict (model, col_names=[]):
     table = {
         'cols': col_names,
@@ -35,44 +36,41 @@ def MakeTableDict (model, col_names=[]):
         i += 1
     return  table
 
-def ModelGroupBy (Model, user, year=True, month=True, day=False):
+# extract data from models by user and account
+def ModelGroupBy (Model, user, account, year=True, month=True, day=False):
     if year and month and day:
-        grouped_model = Model.objects.filter(user=user).values(
-            'account__order', 'account__name', 'io_type', 
-            'category__order','category__name', 'subcategory__order','subcategory__name', 
+        grouped_model = Model.objects.filter(user=user, account=account).values(
+            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
     elif year and month:
-        grouped_model = Model.objects.filter(user=user).values(
-            'account__order', 'account__name', 'io_type', 
-            'category__order','category__name', 'subcategory__order','subcategory__name', 
+        grouped_model = Model.objects.filter(user=user, account=account).values(
+            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date__year', 'date__month'
         ).annotate(Sum('value'))
         df = DataFrame(grouped_model)
         df['date'] = df['date__year'] * 100 + df['date__month']
         return df.drop(columns=['date__year', 'date__month'])
     elif year:
-        grouped_model = Model.objects.filter(user=user).values(
-            'account__order', 'account__name', 'io_type', 
-            'category__order','category__name', 'subcategory__order','subcategory__name', 
+        grouped_model = Model.objects.filter(user=user, account=account).values(
+            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date__year'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__year': 'date'})
     elif month:
-        grouped_model = Model.objects.filter(user=user).values(
-            'account__order', 'account__name', 'io_type', 
-            'category__order','category__name', 'subcategory__order','subcategory__name', 
+        grouped_model = Model.objects.filter(user=user, account=account).values(
+            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
             'date__month'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__month': 'date'})
     else:
-        grouped_model = Model.objects.filter(user=user).values(
-            'account__order', 'account__name', 'io_type', 
-            'category__order','category__name', 'subcategory__order','subcategory__name'
+        grouped_model = Model.objects.filter(user=user, account=account).values(
+            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
 
+# calculate budget fill ratio and colors
 def RatioCalc(transaction, budget):
     try:
         ratio = int(transaction / budget * 100)
@@ -86,27 +84,10 @@ def RatioCalc(transaction, budget):
         ratio_color = 'success'
     return ratio, ratio_color
 
-def DictPivotTable (user, year=True, month=True, day=False):
+# populate table with aggregated data
+def DictPivotTable (user, account, year=True, month=True, day=False):
 
-    # extract aggregated data
-    from .models import Budget, Transaction
-    model_columns = [
-        'account__order', 'account__name', 'io_type', 
-        'category__order','category__name', 'subcategory__order','subcategory__name', 
-        'date'
-    ]
-    df = merge(
-        ModelGroupBy(Budget, user, year=year, month=month, day=day), 
-        ModelGroupBy(Transaction, user, year=year, month=month, day=day), 
-        suffixes=('_budget', '_transaction'),
-        how='outer', 
-        on=model_columns
-    ).set_index(model_columns).unstack('date').fillna(0)
-    df = df.swaplevel(0, 1, axis=1).sort_index(axis=1).reset_index()#.rename(columns=COLUMNS['label'])
-    df = df.drop(columns=['account__order' ,'category__order', 'subcategory__order'], level=0)
-
-    # populate dict
-    df_dict = {'cols': [], 'balance': [], 'rows': []}
+    # setting date formats
     if year and month and day:
         date_format_in, date_format_out = '%Y-%m-%d', '%a%d'
     elif year and month:
@@ -115,6 +96,24 @@ def DictPivotTable (user, year=True, month=True, day=False):
         date_format_in, date_format_out = '%Y', '%Y'
     elif month:
         date_format_in, date_format_out = '%m', '%b'
+
+    # extract aggregated data
+    from .models import Budget, Transaction
+    model_columns = [
+        'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
+        'date'
+    ]
+    df = merge(
+        ModelGroupBy(Budget, user, account, year=year, month=month, day=day), 
+        ModelGroupBy(Transaction, user, account, year=year, month=month, day=day), 
+        suffixes=('_budget', '_transaction'),
+        how='outer', 
+        on=model_columns
+    ).set_index(model_columns).unstack('date').fillna(0).swaplevel(0, 1, axis=1).sort_index(axis=1)
+    df = df.reset_index().drop(columns=['category__order', 'subcategory__order'], level=0)
+
+    # populate dict
+    df_dict = {'cols': [], 'balance': [], 'rows': []}
 
     # cols
     c = 0
@@ -214,3 +213,11 @@ def DictPivotTable (user, year=True, month=True, day=False):
 
     return df_dict
 
+# populate accounts table
+def DictAccountPivotTable(user, year=True, month=True, day=False):
+    from .models import Account
+    account_model = Account.objects.filter(user=user).values('name', 'id', 'order').order_by('order')
+    dict_account = {}
+    for account in account_model:
+        dict_account[account['name']] = DictPivotTable(user=user, account=account['id'], year=year, month=month, day=day)
+    return dict_account

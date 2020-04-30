@@ -40,6 +40,8 @@
 {% block content_budget %}
 <h3 class="page-header">{{ title }} View</h3><hr>
 <div class="wrapper">
+    {% for account_name, pivot_table in accounts_table.items %}
+    <h6><small>Account: </small>{{ account_name }}</h6><hr>
     <table class="table table-sm table-hover table-condensed table-responsive">
         <thead>
             <tr>
@@ -99,5 +101,6 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endfor %}
 </div>
 {% endblock %}
