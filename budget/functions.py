@@ -11,7 +11,7 @@ COLUMNS = {
     },
     'width': {
         'account__name': 80,
-        'category__name': 120,
+        'category__name': 150,
         'subcategory__name': 150,
         'io_type': 50
     }
@@ -113,35 +113,49 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
     df = df.reset_index().drop(columns=['category__order', 'subcategory__order'], level=0)
 
     # populate dict
-    df_dict = {'cols': [], 'balance': [], 'rows': []}
+    df_dict = {
+        'cols': [], 
+        'balance': [], 
+        'rows': {
+            'in': {
+                'total': [],
+                'nontotal': []
+            }, 
+            'out': {
+                'total': [],
+                'nontotal': []
+            }
+        }
+    }
 
     # cols
     c = 0
     for col in df.columns.values:
-        if col[1] == '':
-            dict_dummy = {
-                'is_atribute': True, 
-                'atribute': COLUMNS['label'][col[0]],
-                'sticky': c,
-                'width': COLUMNS['width'][col[0]]
-            }
-            df_dict['cols'].append(dict_dummy)
-        elif col[1] == 'value__sum_transaction':
-            date_label = datetime.strptime(str(col[0]), date_format_in)
-            date_label = date_label.strftime(date_format_out)
-            df_dict['cols'].append({'is_atribute': False, 'date': date_label})
+        if col[0] != 'io_type':
+            if col[1] == '':
+                dict_dummy = {
+                    'is_atribute': True, 
+                    'atribute': COLUMNS['label'][col[0]],
+                    'sticky': c
+                }
+                df_dict['cols'].append(dict_dummy)
+            elif col[1] == 'value__sum_transaction':
+                date_label = datetime.strptime(str(col[0]), date_format_in)
+                date_label = date_label.strftime(date_format_out)
+                df_dict['cols'].append({'is_atribute': False, 'date': date_label})
         c += 1
-    
+        
     # balance
     balance = {
         'in': {'transaction': {}, 'budget': {}},
         'out': {'transaction': {}, 'budget': {}}
     }
     for col in df.columns.values:
-        if col[1] == 'value__sum_transaction':
-            for io_type in balance:
-                for value in balance[io_type]:
-                    balance[io_type][value][col[0]] = 0
+        if col[0] != 'io_type':
+            if col[1] == 'value__sum_transaction':
+                for io_type in balance:
+                    for value in balance[io_type]:
+                        balance[io_type][value][col[0]] = 0
     for rows in df.values.tolist():
         c = 0
         if 'out' in rows:
@@ -149,39 +163,44 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
         else:
             io_type = 'in'
         for col in df.columns.values:
-            if col[1] == 'value__sum_transaction':
-                balance[io_type]['transaction'][col[0]] += rows[c]
-                balance[io_type]['budget'][col[0]] += rows[c-1]
+            if col[0] != 'io_type':
+                if col[1] == 'value__sum_transaction':
+                    balance[io_type]['transaction'][col[0]] += rows[c]
+                    balance[io_type]['budget'][col[0]] += rows[c-1]
             c += 1
     for io_type in balance:
         c = 0
         ratio = 0
         dict_row = []
         for col in df.columns.values:
-            if col[1] == '':
-                dict_dummy = {
-                    'is_atribute': True, 
-                    'atribute': '', 
-                    'sticky': c,
-                    'width': COLUMNS['width'][col[0]]
-                }
-                if col[0] == 'io_type':
-                    dict_dummy['atribute'] = io_type
-                dict_row.append(dict_dummy)
-            elif col[1] == 'value__sum_transaction':
-                transaction = balance[io_type]['transaction'][col[0]]
-                budget = balance[io_type]['budget'][col[0]]
-                ratio, ratio_color = RatioCalc(transaction, budget)
-                dict_dummy = {
-                    'is_atribute': False,
-                    'transaction': transaction,
-                    'budget': budget,
-                    'ratio': ratio,
-                    'ratio_color': ratio_color,
-                }
-                dict_row.append(dict_dummy)
+            if col[0] != 'io_type':
+                if col[1] == '':
+                    dict_dummy = {
+                        'is_atribute': True, 
+                        'atribute': '', 
+                        'sticky': c,
+                        'weight': 'bold'
+                    }
+                    if col[0] == 'io_type':
+                        dict_dummy['atribute'] = io_type
+                    dict_row.append(dict_dummy)
+                elif col[1] == 'value__sum_transaction':
+                    transaction = balance[io_type]['transaction'][col[0]]
+                    budget = balance[io_type]['budget'][col[0]]
+                    ratio, ratio_color = RatioCalc(transaction, budget)
+                    dict_dummy = {
+                        'is_atribute': False,
+                        'transaction': transaction,
+                        'budget': budget,
+                        'ratio': ratio,
+                        'ratio_color': ratio_color,
+                        'transaction_weight': 'bold',
+                        'budget_weight': 'bold'
+                    }
+                    dict_row.append(dict_dummy)
             c += 1
         df_dict['balance'].append(dict_row)
+        df_dict['rows'][io_type]['total'].append(dict_row)
 
     # rows
     for rows in df.values.tolist():
@@ -189,27 +208,34 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
         ratio = 0
         dict_row = []
         for col in df.columns.values:
-            if col[1] == '':
-                dict_dummy = {
-                    'is_atribute': True, 
-                    'atribute': rows[c], 
-                    'sticky': c,
-                    'width': COLUMNS['width'][col[0]]
-                }
-                dict_row.append(dict_dummy)
-            elif col[1] == 'value__sum_transaction':
-                transaction, budget = rows[c], rows[c-1]
-                ratio, ratio_color = RatioCalc(transaction, budget)
-                dict_dummy = {
-                    'is_atribute': False,
-                    'transaction': transaction,
-                    'budget': budget,
-                    'ratio': ratio,
-                    'ratio_color': ratio_color,
-                }
-                dict_row.append(dict_dummy)
+            if col[0] != 'io_type':
+                if col[1] == '':
+                    dict_dummy = {
+                        'is_atribute': True, 
+                        'atribute': rows[c], 
+                        'sticky': c,
+                        'width': COLUMNS['width'][col[0]],
+                        'weight': 'normal'
+                    }
+                    dict_row.append(dict_dummy)
+                elif col[1] == 'value__sum_transaction':
+                    transaction, budget = rows[c], rows[c-1]
+                    ratio, ratio_color = RatioCalc(transaction, budget)
+                    dict_dummy = {
+                        'is_atribute': False,
+                        'transaction': transaction,
+                        'budget': budget,
+                        'ratio': ratio,
+                        'ratio_color': ratio_color,
+                        'transaction_weight': 'normal',
+                        'budget_weight': 'light'
+                    }
+                    dict_row.append(dict_dummy)
             c += 1
-        df_dict['rows'].append(dict_row)
+        if 'out' in rows:
+            df_dict['rows']['out']['nontotal'].append(dict_row)
+        else:
+            df_dict['rows']['in']['nontotal'].append(dict_row)
 
     return df_dict
 
