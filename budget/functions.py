@@ -181,7 +181,7 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
                         'sticky': c,
                         'weight': 'bold'
                     }
-                    if col[0] == 'io_type':
+                    if col[0] == 'category__name':
                         dict_dummy['atribute'] = io_type
                     dict_row.append(dict_dummy)
                 elif col[1] == 'value__sum_transaction':
@@ -199,7 +199,6 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
                     }
                     dict_row.append(dict_dummy)
             c += 1
-        df_dict['balance'].append(dict_row)
         df_dict['rows'][io_type]['total'].append(dict_row)
 
     # rows
@@ -214,7 +213,6 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
                         'is_atribute': True, 
                         'atribute': rows[c], 
                         'sticky': c,
-                        'width': COLUMNS['width'][col[0]],
                         'weight': 'normal'
                     }
                     dict_row.append(dict_dummy)
@@ -236,7 +234,37 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
             df_dict['rows']['out']['nontotal'].append(dict_row)
         else:
             df_dict['rows']['in']['nontotal'].append(dict_row)
-
+    
+    dict_row = []
+    for col_in, col_out in zip(df_dict['rows']['in']['total'][0], df_dict['rows']['out']['total'][0]):
+        if col_in['is_atribute'] and col_out['is_atribute']:
+            if col_in['atribute'] == '':
+                atribute = ''
+            else:
+                atribute = 'balance'
+            dict_dummy = {
+                'is_atribute': True, 
+                'atribute': atribute, 
+                'sticky': col_in['sticky'],
+                'weight': 'bold'
+            }
+            dict_row.append(dict_dummy)
+        else:
+            if col_in['transaction'] != 0 or col_out['transaction'] != 0:
+                show = True
+            else:
+                show = False
+            dict_dummy = {
+                'is_atribute': False,
+                'transaction': col_in['transaction'] - col_out['transaction'],
+                'budget': col_in['budget'] - col_out['budget'],
+                'transaction_weight': 'bold',
+                'budget_weight': 'bold',
+                'transaction_show': show
+            }
+            dict_row.append(dict_dummy)
+    df_dict['balance'] = dict_row
+    
     return df_dict
 
 # populate accounts table
