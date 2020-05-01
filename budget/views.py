@@ -98,7 +98,7 @@ def add_subcategory_view(request):
     form = SubcategoryModelForm(request.POST or None)
     form2 = {}
     key_label = 'Category'
-    form2['Category'] = Category.objects.filter(user=user)
+    form2['Category'] = Category.objects.filter(user=user).order_by('order', 'name')
     if request.method == 'POST':
         obj = form.save(commit=False)
         obj.user = user
@@ -160,9 +160,9 @@ def add_budget_view(request):
     # build form
     form = BudgetModelForm(request.POST or None)
     form2 = {}
-    form2['Account'] = Account.objects.filter(user=user)
-    form2['Subcategory'] = Subcategory.objects.filter(user=user)
-    if request.method == 'POST':
+    form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
+    form2['Subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
+    if request.method == 'POST' and form.is_valid():
         obj = form.save(commit=False)
         obj.user = user
         obj.account = Account.objects.get(user=user,name=request.POST['Account'])
@@ -200,9 +200,9 @@ def add_transaction_view(request):
     # build form
     form = TransactionModelForm(request.POST or None)
     form2 = {}
-    form2['Account'] = Account.objects.filter(user=user)
-    form2['Subcategory'] = Subcategory.objects.filter(user=user)
-    if request.method == 'POST':
+    form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
+    form2['Subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
+    if request.method == 'POST' and form.is_valid():
         obj = form.save(commit=False)
         obj.user = user
         obj.account = Account.objects.get(user=user,name=request.POST['Account'])
