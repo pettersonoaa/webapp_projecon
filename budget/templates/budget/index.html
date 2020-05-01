@@ -66,6 +66,7 @@
                                     <div class="progress" style="height: 2px;">
                                         <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
                                     </div>
+                                {% elif col.budget == 0 %}
                                 {% else %}
                                     <a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a>
                                 {% endif %}
@@ -96,6 +97,7 @@
             </tr>
         </tfoot>
     </table>
+    <hr>
     {% endfor %}
 </div>
 {% endblock %}

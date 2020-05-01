@@ -42,19 +42,32 @@ def index_view(request):
 
 @login_required
 def monthly_view(request):
-    context = {
-        'title': 'Monthly',
-        'accounts_table': DictAccountPivotTable(request.user, month=True)
-    }
-    return render(request, 'budget/index.html', context)
-
+    try:
+        account_table, error = DictAccountPivotTable(request.user, month=True)
+        if error:
+            context = {'error_msg': 'Account without transaction: '+account_table+'.'}
+            return render(request, 'budget/error.html', context)
+        else:
+            context = {'title': 'Monthly', 'accounts_table': account_table}
+            return render(request, 'budget/index.html', context)
+    except:
+        context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
+        return render(request, 'budget/error.html', context)
+    
 @login_required
 def yearly_view(request):
-    context = {
-        'title': 'Yearly',
-        'accounts_table': DictAccountPivotTable(request.user, month=False)
-    }
-    return render(request, 'budget/index.html', context)
+    try:
+        account_table, error = DictAccountPivotTable(request.user, month=False)
+        if error:
+            context = {'error_msg': 'Account without transaction: '+account_table+'.'}
+            return render(request, 'budget/error.html', context)
+        else:
+            context = {'title': 'Yearly', 'accounts_table': account_table}
+            return render(request, 'budget/index.html', context)
+    except:
+        context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
+        return render(request, 'budget/error.html', context)
+    
 
 
 
@@ -111,7 +124,7 @@ def add_subcategory_view(request):
     model = Subcategory.objects.filter(user=user).values(
         'category__name', 'name', 'is_shared', 'is_active', 'detail', 'order', 'id'
         ).order_by('category__order', 'order', 'category__name', 'name')
-    col_names = ['Category', 'Subcategory', 'Share bills', 'Active bill', 'Details', 'Order', 'ID']
+    col_names = ['Category', 'Subcategory', 'Share bill', 'Active', 'Details', 'Order', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
     # render
@@ -139,8 +152,8 @@ def add_account_view(request):
         form = AccountModelForm()
     
     # build table
-    model = Account.objects.filter(user=user).values('name', 'order', 'id').order_by('order', 'name')
-    table = MakeTableDict(model=model, col_names=['Account', 'Order', 'ID'])
+    model = Account.objects.filter(user=user).values('name', 'acc_type', 'value', 'is_active', 'detail', 'order', 'id').order_by('order', 'name')
+    table = MakeTableDict(model=model, col_names=['Account', 'Type', 'Initial Value', 'Active', 'Detail', 'Order', 'ID'])
 
     # render
     context = {
@@ -208,17 +221,6 @@ def add_transaction_view(request):
         obj.account = Account.objects.get(user=user,name=request.POST['Account'])
         obj.subcategory = Subcategory.objects.get(user=user,name=request.POST['Subcategory'])
         obj.category = Subcategory.objects.get(user=user,name=request.POST['Subcategory']).category
-        try:
-            obj.budget = Budget.objects.get(
-                            user=user,category=obj.category,subcategory=obj.subcategory,
-                            account=obj.account,io_type=obj.io_type,date=date(obj.date.year, obj.date.month, 1)
-                        )
-        except:
-            Budget.objects.create(
-                            user=user,category=obj.category,subcategory=obj.subcategory,
-                            account=obj.account,io_type=obj.io_type,date=date(obj.date.year, obj.date.month, 1),
-                            value=obj.value
-            )
         obj.save()
         form = TransactionModelForm()
         form2['Account'] = Account.objects.filter(user=user)

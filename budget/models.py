@@ -1,6 +1,11 @@
 from django.conf import settings
 from django.db import models, connection
 
+ACC_TYPE_CHOICES = [
+    ('cash', 'cash'),
+    ('investment', 'investment'),
+    ('pension', 'pension')
+]
 
 IO_TYPE_CHOICES = [
     ('in', 'in'),
@@ -23,8 +28,8 @@ class Subcategory(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=60)
-    is_shared = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_shared = models.BooleanField(default=False, verbose_name='Share bill')
+    is_active = models.BooleanField(default=True, verbose_name='Active')
     detail = models.TextField(max_length=100, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
     def __str__(self):
@@ -33,6 +38,9 @@ class Subcategory(models.Model):
 class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=60)
+    acc_type = models.CharField(max_length=60, default='cash', choices=ACC_TYPE_CHOICES, verbose_name='Type')
+    value = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Initial Value')
+    is_active = models.BooleanField(default=True, verbose_name='Active')
     detail = models.TextField(max_length=100, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
     def __str__(self):
@@ -44,7 +52,7 @@ class Budget(models.Model):
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
     subcategory = models.ForeignKey('Subcategory', on_delete=models.SET_NULL, null=True)
     account = models.ForeignKey('Account', on_delete=models.SET_NULL, null=True)
-    io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES)
+    io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES, verbose_name='In-Out')
     value = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField()
     
@@ -54,7 +62,7 @@ class Transaction(models.Model):
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
     subcategory = models.ForeignKey('Subcategory', on_delete=models.SET_NULL, null=True)
     account = models.ForeignKey('Account', on_delete=models.SET_NULL, null=True)
-    io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES)
+    io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES, verbose_name='In-Out')
     value = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField()
     

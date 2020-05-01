@@ -273,5 +273,8 @@ def DictAccountPivotTable(user, year=True, month=True, day=False):
     account_model = Account.objects.filter(user=user).values('name', 'id', 'order').order_by('order')
     dict_account = {}
     for account in account_model:
-        dict_account[account['name']] = DictPivotTable(user=user, account=account['id'], year=year, month=month, day=day)
-    return dict_account
+        try:
+            dict_account[account['name']] = DictPivotTable(user=user, account=account['id'], year=year, month=month, day=day)
+        except:
+            return account['name'], True
+    return dict_account, False

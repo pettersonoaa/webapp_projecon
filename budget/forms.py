@@ -21,7 +21,7 @@ class SubcategoryModelForm(ModelForm):
 class AccountModelForm(ModelForm):
     class Meta:
         model = Account
-        fields = ['name', 'detail', 'order']
+        fields = ['name', 'acc_type', 'value', 'is_active', 'detail', 'order']
         widgets = {
             'detail': TextInput(attrs={'size': 20})
         }
