@@ -27,7 +27,8 @@ from .functions import (
     MakeTableDict,
     ModelGroupBy,
     DictPivotTable,
-    DictAccountPivotTable
+    DictAccountPivotTable,
+    PopulateNextMonth
 )
 
 
@@ -42,6 +43,7 @@ def index_view(request):
 
 @login_required
 def monthly_view(request):
+    #PopulateNextMonth(request.user, 2021, 1)
     try:
         account_table, error = DictAccountPivotTable(request.user, month=True)
         if error:

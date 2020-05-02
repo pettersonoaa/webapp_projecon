@@ -304,3 +304,18 @@ def DictAccountPivotTable(user, year=True, month=True, day=False):
         except:
             return account['name'], True
     return dict_account, False
+
+def PopulateNextMonth(user, year, month):
+    from .models import Budget
+    last_date = Budget.objects.latest('date')
+    filtered_ids = Budget.objects.filter(
+        user=user, 
+        date__year=last_date.date.year,
+        date__month=last_date.date.month,
+        #subcategory__name='salario'
+    ).values('id')
+    for row in filtered_ids:
+        model = Budget.objects.get(pk=row['id'])
+        model.date = date(year=year, month=month, day=1)
+        model.save()
+        print(model.id, model.subcategory, model.date)
