@@ -183,8 +183,8 @@ def add_budget_view(request):
         obj.category = Subcategory.objects.get(user=user,name=request.POST['Subcategory']).category
         obj.save()
         form = BudgetModelForm()
-        form2['Account'] = Account.objects.filter(user=user)
-        form2['Subcategory'] = Subcategory.objects.filter(user=user)
+        form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
+        form2['Subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
     
     # build table
     model = Budget.objects.filter(user=user).values(
@@ -223,8 +223,8 @@ def add_transaction_view(request):
         obj.category = Subcategory.objects.get(user=user,name=request.POST['Subcategory']).category
         obj.save()
         form = TransactionModelForm()
-        form2['Account'] = Account.objects.filter(user=user)
-        form2['Subcategory'] = Subcategory.objects.filter(user=user)
+        form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
+        form2['Subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
 
     # build table
     model = Transaction.objects.filter(user=user).values(

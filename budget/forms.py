@@ -51,10 +51,7 @@ class UpdateBudgetModelForm(ModelForm):
         widgets = {
              'id': HiddenInput(),
              'user': HiddenInput(),
-             'category': HiddenInput(),
-             'subcategory': HiddenInput(),
-             'account': HiddenInput(),
-             'date': HiddenInput()
+             'category': HiddenInput()
         }
 
 class UpdateTransactionModelForm(ModelForm):
@@ -65,9 +62,6 @@ class UpdateTransactionModelForm(ModelForm):
              'id': HiddenInput(),
              'user': HiddenInput(),
              'category': HiddenInput(),
-             'subcategory': HiddenInput(),
-             'account': HiddenInput(),
-             'date': HiddenInput()
         }
 
 

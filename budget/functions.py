@@ -85,7 +85,7 @@ def RatioCalc(transaction, budget):
     return ratio, ratio_color
 
 # populate table with aggregated data
-def DictPivotTable (user, account, year=True, month=True, day=False):
+def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
 
     # setting date formats
     if year and month and day:
@@ -115,7 +115,8 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
     # populate dict
     df_dict = {
         'cols': [], 
-        'balance': [], 
+        'balance': [],
+        'available': [], 
         'rows': {
             'in': {
                 'total': [],
@@ -235,6 +236,7 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
         else:
             df_dict['rows']['in']['nontotal'].append(dict_row)
     
+    # balance
     dict_row = []
     for col_in, col_out in zip(df_dict['rows']['in']['total'][0], df_dict['rows']['out']['total'][0]):
         if col_in['is_atribute'] and col_out['is_atribute']:
@@ -264,17 +266,47 @@ def DictPivotTable (user, account, year=True, month=True, day=False):
             }
             dict_row.append(dict_dummy)
     df_dict['balance'] = dict_row
+
+    # available
+    acc_value_transaction = acc_value
+    acc_value_budget = acc_value
+    dict_row = []
+    for col in df_dict['balance']:
+        if col['is_atribute']:
+            if col['atribute'] == '':
+                atribute = ''
+            else:
+                atribute = 'available'
+            dict_dummy = {
+                'is_atribute': True, 
+                'atribute': atribute, 
+                'sticky': col['sticky'],
+                'weight': col['weight']
+            }
+        else:
+            acc_value_transaction += col['transaction']
+            acc_value_budget += col['budget']
+            dict_dummy = {
+                'is_atribute': False,
+                'transaction': acc_value_transaction,
+                'budget': acc_value_budget,
+                'transaction_weight': col['transaction_weight'],
+                'budget_weight': col['budget_weight'],
+                'transaction_show': True
+            }
+        dict_row.append(dict_dummy)
+    df_dict['available'] = dict_row
     
     return df_dict
 
 # populate accounts table
 def DictAccountPivotTable(user, year=True, month=True, day=False):
     from .models import Account
-    account_model = Account.objects.filter(user=user).values('name', 'id', 'order').order_by('order')
+    account_model = Account.objects.filter(user=user).values('name', 'value', 'id', 'order').order_by('order')
     dict_account = {}
     for account in account_model:
         try:
-            dict_account[account['name']] = DictPivotTable(user=user, account=account['id'], year=year, month=month, day=day)
+            dict_account[account['name']] = DictPivotTable(user=user, account=account['id'], acc_value=account['value'], year=year, month=month, day=day)
         except:
             return account['name'], True
     return dict_account, False

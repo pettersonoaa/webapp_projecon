@@ -24,12 +24,17 @@
     .sticky-col-bg-light {
         background-color: #fafafa;
     }
+    .sticky-col-bg-normal {
+        background-color: #f1f1f1;
+    }
     th:hover {
         background-color: #ebebeb;
     }
     .tr-th-bg-light {
-        background-color: rgba(247, 247, 247, 0.3);
         background-color: #fafafa;
+    }
+    .tr-th-bg-normal {
+        background-color: #f1f1f1;
     }
 </style>
 {% endblock %}
@@ -40,10 +45,10 @@
     <h6><small>Account: </small>{{ account_name }}</h6><hr>
     <table class="table table-sm table-hover table-condensed table-responsive">
         <thead>
-            <tr class="tr-th-bg-light">
+            <tr class="tr-th-bg-normal">
             {% for col in pivot_table.cols %}
                 {% if col.is_atribute %}
-                <th class="sticky-col sticky-col-{{ col.sticky }} sticky-col-bg-light" scope="col">{{ col.atribute }}</th>
+                <th class="sticky-col sticky-col-{{ col.sticky }} sticky-col-bg-normal" scope="col">{{ col.atribute }}</th>
                 {% else %}
                 <th scope="col">{{ col.date }}</th>
                 {% endif %}
@@ -66,7 +71,7 @@
                                     <div class="progress" style="height: 2px;">
                                         <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
                                     </div>
-                                {% elif col.budget == 0 %}
+                                {% elif col.budget == 0 and total_label != 'total' %}
                                 {% else %}
                                     <a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a>
                                 {% endif %}
@@ -83,6 +88,22 @@
                 {% for col in pivot_table.balance %}
                     {% if col.is_atribute %}
                     <th class="sticky-col sticky-col-{{ col.sticky }} sticky-col-bg-light font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
+                    {% else %}
+                    <td>
+                        {% if col.transaction_show %}
+                            <a class="font-weight-{{ col.transaction_weight }}">{{ col.transaction|floatformat:"0" }}</a>
+                            <small><a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a></small>
+                        {% else %}
+                            <a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            <tr class="tr-th-bg-normal">
+                {% for col in pivot_table.available %}
+                    {% if col.is_atribute %}
+                    <th class="sticky-col sticky-col-{{ col.sticky }} sticky-col-bg-normal font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
                     {% else %}
                     <td>
                         {% if col.transaction_show %}
