@@ -5,15 +5,9 @@ from datetime import date, datetime
 COLUMNS = {
     'label': {
         'account__name': 'Account',
-        'category__name': 'Category',
+        'subcategory__category__name': 'Category',
         'subcategory__name': 'Subcategory',
         'io_type': 'IO'
-    },
-    'width': {
-        'account__name': 80,
-        'category__name': 150,
-        'subcategory__name': 150,
-        'io_type': 50
     }
 }
 
@@ -34,19 +28,19 @@ def MakeTableDict (model, col_names=[]):
             row_list.append({'value': model[i][row], 'is_id': is_id})
         table['rows'].append(row_list)
         i += 1
-    return  table
+    return table
 
 # extract data from models by user and account
 def ModelGroupBy (Model, user, account, year=True, month=True, day=False):
     if year and month and day:
         grouped_model = Model.objects.filter(user=user, account=account).values(
-            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
+            'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
     elif year and month:
         grouped_model = Model.objects.filter(user=user, account=account).values(
-            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
+            'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date__year', 'date__month'
         ).annotate(Sum('value'))
         df = DataFrame(grouped_model)
@@ -54,19 +48,19 @@ def ModelGroupBy (Model, user, account, year=True, month=True, day=False):
         return df.drop(columns=['date__year', 'date__month'])
     elif year:
         grouped_model = Model.objects.filter(user=user, account=account).values(
-            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
+            'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date__year'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__year': 'date'})
     elif month:
         grouped_model = Model.objects.filter(user=user, account=account).values(
-            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
+            'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date__month'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__month': 'date'})
     else:
         grouped_model = Model.objects.filter(user=user, account=account).values(
-            'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
+            'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
 
@@ -100,7 +94,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
     # extract aggregated data
     from .models import Budget, Transaction
     model_columns = [
-        'io_type', 'category__order','category__name', 'subcategory__order','subcategory__name', 
+        'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
         'date'
     ]
     df = merge(
@@ -110,7 +104,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
         how='outer', 
         on=model_columns
     ).set_index(model_columns).unstack('date').fillna(0).swaplevel(0, 1, axis=1).sort_index(axis=1)
-    df = df.reset_index().drop(columns=['category__order', 'subcategory__order'], level=0)
+    df = df.reset_index().drop(columns=['subcategory__category__order', 'subcategory__order'], level=0)
 
     # populate dict
     df_dict = {
@@ -182,7 +176,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                         'sticky': c,
                         'weight': 'bold'
                     }
-                    if col[0] == 'category__name':
+                    if col[0] == 'subcategory__category__name':
                         dict_dummy['atribute'] = io_type
                     dict_row.append(dict_dummy)
                 elif col[1] == 'value__sum_transaction':

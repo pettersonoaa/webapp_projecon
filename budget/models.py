@@ -49,7 +49,7 @@ class Account(models.Model):
 class Budget(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
+    #category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
     subcategory = models.ForeignKey('Subcategory', on_delete=models.SET_NULL, null=True)
     account = models.ForeignKey('Account', on_delete=models.SET_NULL, null=True)
     io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES, verbose_name='In-Out')
@@ -59,7 +59,7 @@ class Budget(models.Model):
 class Transaction(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
+    #category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
     subcategory = models.ForeignKey('Subcategory', on_delete=models.SET_NULL, null=True)
     account = models.ForeignKey('Account', on_delete=models.SET_NULL, null=True)
     io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES, verbose_name='In-Out')

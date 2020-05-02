@@ -47,21 +47,19 @@ class TransactionModelForm(ModelForm):
 class UpdateBudgetModelForm(ModelForm):
     class Meta:
         model = Budget
-        fields = ['id', 'user', 'category', 'subcategory', 'account', 'io_type', 'value', 'date']
+        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
         widgets = {
-             'id': HiddenInput(),
-             'user': HiddenInput(),
-             'category': HiddenInput()
+            'id': HiddenInput(),
+            'user': HiddenInput()
         }
 
 class UpdateTransactionModelForm(ModelForm):
     class Meta:
         model = Transaction
-        fields = ['id', 'user', 'category', 'subcategory', 'account', 'io_type', 'value', 'date']
+        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
         widgets = {
-             'id': HiddenInput(),
-             'user': HiddenInput(),
-             'category': HiddenInput(),
+            'id': HiddenInput(),
+            'user': HiddenInput()
         }
 
 
@@ -69,29 +67,27 @@ class UpdateTransactionModelForm(ModelForm):
 class DeleteBudgetModelForm(ModelForm):
     class Meta:
         model = Budget
-        fields = ['id', 'user', 'category', 'subcategory', 'account', 'io_type', 'value', 'date']
+        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
         widgets = {
-             'id': HiddenInput(),
-             'user': HiddenInput(),
-             'category': HiddenInput(),
-             'subcategory': HiddenInput(),
-             'account': HiddenInput(),
-             'io_type': HiddenInput(),
-             'value': HiddenInput(),
-             'date': HiddenInput()
+            'id': HiddenInput(),
+            'user': HiddenInput(),
+            'subcategory': HiddenInput(),
+            'account': HiddenInput(),
+            'io_type': HiddenInput(),
+            'value': HiddenInput(),
+            'date': HiddenInput()
         }
 
 class DeleteTransactionModelForm(ModelForm):
     class Meta:
         model = Transaction
-        fields = ['id', 'user', 'category', 'subcategory', 'account', 'io_type', 'value', 'date']
+        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
         widgets = {
-             'id': HiddenInput(),
-             'user': HiddenInput(),
-             'category': HiddenInput(),
-             'subcategory': HiddenInput(),
-             'account': HiddenInput(),
-             'io_type': HiddenInput(),
-             'value': HiddenInput(),
-             'date': HiddenInput()
+            'id': HiddenInput(),
+            'user': HiddenInput(),
+            'subcategory': HiddenInput(),
+            'account': HiddenInput(),
+            'io_type': HiddenInput(),
+            'value': HiddenInput(),
+            'date': HiddenInput()
         }

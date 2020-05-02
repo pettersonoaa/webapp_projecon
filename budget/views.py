@@ -180,7 +180,6 @@ def add_budget_view(request):
         obj.user = user
         obj.account = Account.objects.get(user=user,name=request.POST['Account'])
         obj.subcategory = Subcategory.objects.get(user=user,name=request.POST['Subcategory'])
-        obj.category = Subcategory.objects.get(user=user,name=request.POST['Subcategory']).category
         obj.save()
         form = BudgetModelForm()
         form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
@@ -188,8 +187,8 @@ def add_budget_view(request):
     
     # build table
     model = Budget.objects.filter(user=user).values(
-        'account__name', 'category__name', 'subcategory__name', 'io_type', 'value', 'date', 'id'
-        ).order_by('-date', 'io_type', 'account__order', 'category__order', 'subcategory__order')
+        'account__name', 'subcategory__category__name', 'subcategory__name', 'io_type', 'value', 'date', 'id'
+        ).order_by('-date', 'io_type', 'account__order', 'subcategory__category__order', 'subcategory__order')
     col_names = ['Account', 'Category', 'Subcategory', 'Io type', 'Value', 'Date', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
@@ -220,7 +219,6 @@ def add_transaction_view(request):
         obj.user = user
         obj.account = Account.objects.get(user=user,name=request.POST['Account'])
         obj.subcategory = Subcategory.objects.get(user=user,name=request.POST['Subcategory'])
-        obj.category = Subcategory.objects.get(user=user,name=request.POST['Subcategory']).category
         obj.save()
         form = TransactionModelForm()
         form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
@@ -228,8 +226,8 @@ def add_transaction_view(request):
 
     # build table
     model = Transaction.objects.filter(user=user).values(
-        'account__name', 'category__name', 'subcategory__name', 'io_type', 'value', 'date', 'id'
-        ).order_by('-date', 'io_type', 'account__order', 'category__order', 'subcategory__order')
+        'account__name', 'subcategory__category__name', 'subcategory__name', 'io_type', 'value', 'date', 'id'
+        ).order_by('-date', 'io_type', 'account__order', 'subcategory__category__order', 'subcategory__order')
     col_names = ['Account', 'Category', 'Subcategory', 'Io type', 'Value', 'Date', 'ID']
     table = MakeTableDict(model=model, col_names=col_names)
 
