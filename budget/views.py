@@ -2,7 +2,7 @@ from datetime import date
 from pandas import merge
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Sum, Max, Min, Count
+from django.db.models import Avg, Sum, Max, Min, Count, F
 from .models import (
     Category, 
     Subcategory, 
@@ -28,7 +28,7 @@ from .functions import (
     ModelGroupBy,
     DictPivotTable,
     DictAccountPivotTable,
-    PopulateNextMonth
+    PopulateMonth
 )
 
 
@@ -43,7 +43,19 @@ def index_view(request):
 
 @login_required
 def monthly_view(request):
-    #PopulateNextMonth(request.user, 2021, 1)
+    #PopulateMonth(request.user, 2021, 1)
+    model = Budget.objects.filter(
+            user=request.user,
+            subcategory__is_active=True,
+            subcategory__is_seassonal=False,
+            value__gt=0
+        ).values(
+            'subcategory__name'
+        ).annotate(max_date=Max('date'))#.filter(date=F('max_date'))
+    #print(model)
+    for row in model:
+        print(row)
+        
     try:
         account_table, error = DictAccountPivotTable(request.user, month=True)
         if error:

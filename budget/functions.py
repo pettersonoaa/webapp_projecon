@@ -305,17 +305,42 @@ def DictAccountPivotTable(user, year=True, month=True, day=False):
             return account['name'], True
     return dict_account, False
 
-def PopulateNextMonth(user, year, month):
+def PopulateMonth(user, year, month):
     from .models import Budget
-    last_date = Budget.objects.latest('date')
-    filtered_ids = Budget.objects.filter(
-        user=user, 
-        date__year=last_date.date.year,
-        date__month=last_date.date.month,
-        #subcategory__name='salario'
-    ).values('id')
-    for row in filtered_ids:
-        model = Budget.objects.get(pk=row['id'])
-        model.date = date(year=year, month=month, day=1)
-        model.save()
-        print(model.id, model.subcategory, model.date)
+
+    # non-seassonal: get last month data
+    try:
+        last_date = Budget.objects.latest('date')
+        filtered_ids = Budget.objects.filter(
+            user=user,
+            subcategory__is_active=True,
+            subcategory__is_seassonal=False,
+            value__gt=0,
+            date__year=last_date.date.year,
+            date__month=last_date.date.month
+        ).values('id')
+        for row in filtered_ids:
+            model = Budget.objects.get(pk=row['id'])
+            model.date = date(year=year, month=month, day=1)
+            model.save()
+            print(model.id, model.subcategory, model.date)
+    except:
+        pass
+    
+    # seassonal: get last year data
+    try:
+        filtered_ids = Budget.objects.filter(
+            user=user,
+            subcategory__is_active=True,
+            subcategory__is_seassonal=True,
+            value__gt=0,
+            date__year=year-1,
+            date__month=month
+        ).values('id')
+        for row in filtered_ids:
+            model = Budget.objects.get(pk=row['id'])
+            model.date = date(year=year, month=month, day=1)
+            model.save()
+            print(model.id, model.subcategory, model.date)
+    except:
+        pass

@@ -30,6 +30,7 @@ class Subcategory(models.Model):
     name = models.CharField(max_length=60)
     is_shared = models.BooleanField(default=False, verbose_name='Share bill')
     is_active = models.BooleanField(default=True, verbose_name='Active')
+    is_seassonal = models.BooleanField(default=False, verbose_name='Seassonal')
     detail = models.TextField(max_length=100, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
     def __str__(self):
