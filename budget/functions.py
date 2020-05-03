@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from pandas import DataFrame, merge
 from datetime import date, datetime
 
@@ -105,7 +105,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
         on=model_columns
     ).set_index(model_columns).unstack('date').fillna(0).swaplevel(0, 1, axis=1).sort_index(axis=1)
     df = df.reset_index().drop(columns=['subcategory__category__order', 'subcategory__order'], level=0)
-
+    
     # populate dict
     df_dict = {
         'cols': [], 
@@ -139,7 +139,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                 date_label = date_label.strftime(date_format_out)
                 df_dict['cols'].append({'is_atribute': False, 'date': date_label})
         c += 1
-        
+    
     # balance
     balance = {
         'in': {'transaction': {}, 'budget': {}},
@@ -195,7 +195,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                     dict_row.append(dict_dummy)
             c += 1
         df_dict['rows'][io_type]['total'].append(dict_row)
-
+    
     # rows
     for rows in df.values.tolist():
         c = 0
@@ -260,7 +260,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
             }
             dict_row.append(dict_dummy)
     df_dict['balance'] = dict_row
-
+    
     # available
     acc_value_transaction = acc_value
     acc_value_budget = acc_value
@@ -286,7 +286,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                 'budget': acc_value_budget,
                 'transaction_weight': col['transaction_weight'],
                 'budget_weight': col['budget_weight'],
-                'transaction_show': col['show']
+                'transaction_show': col['transaction_show']
             }
         dict_row.append(dict_dummy)
     df_dict['available'] = dict_row
@@ -307,28 +307,43 @@ def DictAccountPivotTable(user, year=True, month=True, day=False):
 
 def PopulateMonth(user, year, month):
     from .models import Budget
-
-    # non-seassonal: get last month data
+    # non-seassonal: 
     try:
-        last_date = Budget.objects.latest('date')
-        filtered_ids = Budget.objects.filter(
+        # get last non-zero month by subcategory
+        filtered_subcategories = Budget.objects.filter(
             user=user,
             subcategory__is_active=True,
             subcategory__is_seassonal=False,
-            value__gt=0,
-            date__year=last_date.date.year,
-            date__month=last_date.date.month
-        ).values('id')
-        for row in filtered_ids:
-            model = Budget.objects.get(pk=row['id'])
-            model.date = date(year=year, month=month, day=1)
-            model.save()
-            print(model.id, model.subcategory, model.date)
+            value__gt=0
+        ).values(
+            'subcategory'
+        ).annotate(Max('date'))
+
+        # get id from last filtered data
+        for subcategory_row in filtered_subcategories:
+            filtered_ids = Budget.objects.filter(
+                user=user,
+                subcategory=subcategory_row['subcategory'],
+                date=subcategory_row['date__max']
+            ).values('id')
+
+            # update / insert data
+            for id_row in filtered_ids:
+                obj = Budget.objects.get(pk=id_row['id'])
+                obj, created = Budget.objects.update_or_create(
+                    user=obj.user,
+                    subcategory=obj.subcategory,
+                    account=obj.account,
+                    io_type=obj.io_type,
+                    value=obj.value,
+                    date=date(year=year, month=month, day=1)
+                )
     except:
         pass
     
-    # seassonal: get last year data
+    # seassonal:
     try:
+        # get id from non-zero last year data
         filtered_ids = Budget.objects.filter(
             user=user,
             subcategory__is_active=True,
@@ -337,10 +352,17 @@ def PopulateMonth(user, year, month):
             date__year=year-1,
             date__month=month
         ).values('id')
-        for row in filtered_ids:
-            model = Budget.objects.get(pk=row['id'])
-            model.date = date(year=year, month=month, day=1)
-            model.save()
-            print(model.id, model.subcategory, model.date)
+
+        # update / insert data
+        for id_row in filtered_ids:
+            obj = Budget.objects.get(pk=id_row['id'])
+            obj, created = Budget.objects.update_or_create(
+                user=obj.user,
+                subcategory=obj.subcategory,
+                account=obj.account,
+                io_type=obj.io_type,
+                value=obj.value,
+                date=date(year=year, month=month, day=1)
+            )
     except:
         pass

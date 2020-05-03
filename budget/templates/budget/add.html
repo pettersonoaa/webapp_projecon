@@ -36,7 +36,7 @@
                     <a class="text-warning" href="{% url update_url pk=col.value %}">
                         <span class="far fa-edit"></span>
                     </a> &nbsp;
-                    {% if title == 'Transaction' or title == 'Budget' %}
+                    {% if delete_button %}
                         <a class="text-danger" href="{% url delete_url pk=col.value %}">
                             <span class="far fa-trash-alt"></span>
                         </a>

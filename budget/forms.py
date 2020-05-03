@@ -1,6 +1,17 @@
-from django.forms import ModelForm, HiddenInput, SelectDateWidget, TextInput
-from .models import Category, Subcategory, Account, Budget, Transaction
-
+from django.forms import (
+    ModelForm, 
+    HiddenInput, 
+    SelectDateWidget, 
+    TextInput
+)
+from .models import (
+    Category, 
+    Subcategory, 
+    Account, 
+    Rule,
+    Budget, 
+    Transaction
+)
 
 class CategoryModelForm(ModelForm):
     class Meta:
@@ -13,7 +24,7 @@ class CategoryModelForm(ModelForm):
 class SubcategoryModelForm(ModelForm):
     class Meta:
         model = Subcategory
-        fields = ['name', 'order', 'is_shared', 'is_active', 'is_seassonal', 'detail']
+        fields = ['name', 'is_shared', 'is_active', 'is_seassonal', 'order', 'detail']
         widgets = {
             'detail': TextInput(attrs={'size': 20})
         }
@@ -26,6 +37,14 @@ class AccountModelForm(ModelForm):
             'detail': TextInput(attrs={'size': 20})
         }
 
+class RuleModelForm(ModelForm):
+    class Meta:
+        model = Rule
+        fields = ['rule_type', 'coefficient_value', 'constant_value', 'order', 'detail']
+        widgets = {
+            'detail': TextInput(attrs={'size': 20})
+        }
+        
 class BudgetModelForm(ModelForm):
     class Meta:
         model = Budget
@@ -64,6 +83,22 @@ class UpdateTransactionModelForm(ModelForm):
 
 
 
+class DeleteRuleModelForm(ModelForm):
+    class Meta:
+        model = Rule
+        fields = ['subcategory', 'rule_type', 'target', 'coefficient_value', 'constant_value', 'order', 'detail']
+        widgets = {
+            'id': HiddenInput(),
+            'user': HiddenInput(),
+            'subcategory': HiddenInput(),
+            'rule_type': HiddenInput(),
+            'target': HiddenInput(),
+            'coefficient_value': HiddenInput(),
+            'constant_value': HiddenInput(),
+            'order': HiddenInput(),
+            'detail': HiddenInput()
+        }
+
 class DeleteBudgetModelForm(ModelForm):
     class Meta:
         model = Budget
@@ -91,3 +126,4 @@ class DeleteTransactionModelForm(ModelForm):
             'value': HiddenInput(),
             'date': HiddenInput()
         }
+ 

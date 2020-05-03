@@ -39,7 +39,27 @@
 </style>
 {% endblock %}
 {% block content_budget %}
-<h3 class="page-header">{{ title }} View</h3><hr>
+<div class="d-flex justify-content-between">
+    <div class="p2">
+        <h3 class="page-header">{{ title }} View</h3>
+    </div>
+    <div class="p2">
+        <form class="form-group" method="POST">{% csrf_token %}
+            <div class="p2">
+                {% for key, options in populate_budget.items %}
+                <label for="populate_{{ key }}_id"><small>{{ key }}:</small></label>
+                <select name="populate_{{ key }}" id="populate_{{ key }}_id">
+                    {% for option in options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                </select>
+                {% endfor %}
+                <button class="btn btn-secondary btn-sm" type="submit">Add Budget</button>
+            </div>
+        </form> 
+    </div>
+</div>
+<hr>
 <div class="wrapper">
     {% for account_name, pivot_table in accounts_table.items %}
     <h6><small>Account: </small>{{ account_name }}</h6><hr>
