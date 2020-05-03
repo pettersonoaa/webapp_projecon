@@ -286,7 +286,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                 'budget': acc_value_budget,
                 'transaction_weight': col['transaction_weight'],
                 'budget_weight': col['budget_weight'],
-                'transaction_show': True
+                'transaction_show': col['show']
             }
         dict_row.append(dict_dummy)
     df_dict['available'] = dict_row
