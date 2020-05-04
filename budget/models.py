@@ -54,11 +54,14 @@ class Account(models.Model):
 
 class Rule(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    account = models.ForeignKey('Account', on_delete=models.SET_NULL, null=True)
     subcategory = models.ForeignKey('Subcategory', on_delete=models.SET_NULL, null=True)
+    io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES, verbose_name='Subcategory In-Out')
     rule_type = models.CharField(max_length=60, default='equal', choices=RULE_TYPE_CHOICES, verbose_name='Rule')
     target = models.ForeignKey('Subcategory', on_delete=models.SET_NULL, null=True, related_name='target')
-    coefficient_value = models.DecimalField(max_digits=10, decimal_places=4, default=1)
-    constant_value = models.DecimalField(max_digits=16, decimal_places=4, default=0)
+    target_io_type = models.CharField(max_length=3, default='out', choices=IO_TYPE_CHOICES, verbose_name='Target In-Out')
+    coefficient = models.DecimalField(max_digits=10, decimal_places=4, default=1, verbose_name='Coefficient Value')
+    constant = models.DecimalField(max_digits=16, decimal_places=4, default=0, verbose_name='Constant Value')
     order = models.IntegerField(null=True, blank=True)
     detail = models.TextField(max_length=100, null=True, blank=True)
 

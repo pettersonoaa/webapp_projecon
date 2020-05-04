@@ -19,9 +19,6 @@ from .forms import (
     BudgetModelForm, 
     TransactionModelForm,
 
-    UpdateBudgetModelForm,
-    UpdateTransactionModelForm,
-
     DeleteRuleModelForm,
     DeleteBudgetModelForm,
     DeleteTransactionModelForm
@@ -41,16 +38,14 @@ from .functions import (
 def index_view(request):
     return redirect('monthly_view')
 
-
-
-
 @login_required
 def monthly_view(request):
+
     # populate Budget
     model = Budget.objects.values('date__year').distinct()
     populate_budget = {
+        'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
         'year': [i['date__year'] for i in model],
-        'month': [date(1,i+1,1).strftime('%b') for i in range(12)]
     }
     populate_budget['year'].append(populate_budget['year'][-1]+1)
     populate_budget['year'].append(populate_budget['year'][0]-1)
@@ -80,11 +75,12 @@ def monthly_view(request):
     
 @login_required
 def yearly_view(request):
+
     # populate Budget
     model = Budget.objects.values('date__year').distinct()
     populate_budget = {
-        'year': [i['date__year'] for i in model],
-        'month': [date(1,i+1,1).strftime('%b') for i in range(12)]
+        'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
+        'year': [i['date__year'] for i in model]
     }
     populate_budget['year'].append(populate_budget['year'][-1]+1)
     populate_budget['year'].append(populate_budget['year'][0]-1)
@@ -259,6 +255,7 @@ def add_rule_view(request):
     # build form
     form = RuleModelForm(request.POST or None)
     form2 = {}
+    form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
     form2['Subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
     form2['Target'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
     if request.method == 'POST' and form.is_valid():
@@ -268,22 +265,28 @@ def add_rule_view(request):
         obj.target = Subcategory.objects.get(user=user,name=request.POST['Target'])
         obj.save()
         form = RuleModelForm()
+        form2['Account'] = Account.objects.filter(user=user).order_by('order', 'name')
         form2['Subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
         form2['Target'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
     
     # build table
     model = Rule.objects.filter(user=user).values(
+        'account__name',
         'subcategory__category__name',
         'subcategory__name', 
+        'io_type',
         'rule_type', 
         'target__category__name',
         'target__name', 
-        'coefficient_value', 
-        'constant_value', 
+        'target_io_type',
+        'coefficient', 
+        'constant', 
         'order',
         'detail', 
         'id'
     ).order_by(
+        'account__order',
+        'account__name',
         'subcategory__category__order', 
         'subcategory__category__name', 
         'subcategory__order', 
@@ -291,11 +294,14 @@ def add_rule_view(request):
         'order'
     )
     table = MakeTableDict(model=model, col_names=[
+        'Acc.',
         'Category',
         'Subcat.', 
+        'IO',
         'Rule', 
-        'Target Cat.',
-        'Target Subcat.', 
+        'Category',
+        'Target', 
+        'IO',
         'Coeff.', 
         'Const.', 
         'Order',
@@ -493,7 +499,7 @@ def update_rule_view(request, pk):
 @login_required
 def update_budget_view(request, pk):
     model = get_object_or_404(Budget, pk=pk)
-    form = UpdateBudgetModelForm(request.POST or None, instance=model)
+    form = BudgetModelForm(request.POST or None, instance=model)
     if request.method == 'POST':
         form.save()
         return redirect('add_budget_view')
@@ -506,7 +512,7 @@ def update_budget_view(request, pk):
 @login_required
 def update_transaction_view(request, pk):
     model = get_object_or_404(Transaction, pk=pk)
-    form = UpdateTransactionModelForm(request.POST or None, instance=model)
+    form = TransactionModelForm(request.POST or None, instance=model)
     if request.method == 'POST':
         form.save()
         return redirect('add_transaction_view')

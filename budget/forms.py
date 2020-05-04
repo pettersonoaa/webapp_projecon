@@ -16,85 +16,89 @@ from .models import (
 class CategoryModelForm(ModelForm):
     class Meta:
         model = Category
-        fields = ['name', 'order', 'detail']
+        fields = '__all__'
         widgets = {
+            'id': HiddenInput(),
+            'user': HiddenInput(),
             'detail': TextInput(attrs={'size': 20})
         }
 
 class SubcategoryModelForm(ModelForm):
     class Meta:
         model = Subcategory
-        fields = ['name', 'is_shared', 'is_active', 'is_seassonal', 'order', 'detail']
+        fields = '__all__'
         widgets = {
+            'id': HiddenInput(),
+            'user': HiddenInput(),
+            'category': HiddenInput(),
             'detail': TextInput(attrs={'size': 20})
         }
 
 class AccountModelForm(ModelForm):
     class Meta:
         model = Account
-        fields = ['name', 'acc_type', 'value', 'is_active', 'order', 'detail']
+        fields = '__all__'
         widgets = {
+            'id': HiddenInput(),
+            'user': HiddenInput(),
             'detail': TextInput(attrs={'size': 20})
         }
 
 class RuleModelForm(ModelForm):
     class Meta:
         model = Rule
-        fields = ['rule_type', 'coefficient_value', 'constant_value', 'order', 'detail']
+        fields = '__all__'
         widgets = {
+            'id': HiddenInput(),
+            'user': HiddenInput(),
+            'account': HiddenInput(),
+            'subcategory': HiddenInput(),
+            'target': HiddenInput(),
             'detail': TextInput(attrs={'size': 20})
         }
         
 class BudgetModelForm(ModelForm):
     class Meta:
         model = Budget
-        fields = ['io_type', 'value', 'date']
+        fields = '__all__'
         widgets = {
-            'date': SelectDateWidget(empty_label="Nothing")
+            'id': HiddenInput(),
+            'user': HiddenInput(),
+            'account': HiddenInput(),
+            'subcategory': HiddenInput(),
+            'detail': TextInput(attrs={'size': 20})
         }
 
 class TransactionModelForm(ModelForm):
     class Meta:
         model = Transaction
-        fields = ['io_type', 'value', 'date']
-        widgets = {
-            'date': SelectDateWidget(empty_label="Nothing")
-        }
-
-
-
-class UpdateBudgetModelForm(ModelForm):
-    class Meta:
-        model = Budget
-        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
+        fields = '__all__'
         widgets = {
             'id': HiddenInput(),
-            'user': HiddenInput()
+            'user': HiddenInput(),
+            'account': HiddenInput(),
+            'subcategory': HiddenInput(),
+            'detail': TextInput(attrs={'size': 20})
         }
 
-class UpdateTransactionModelForm(ModelForm):
-    class Meta:
-        model = Transaction
-        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
-        widgets = {
-            'id': HiddenInput(),
-            'user': HiddenInput()
-        }
 
 
 
 class DeleteRuleModelForm(ModelForm):
     class Meta:
         model = Rule
-        fields = ['subcategory', 'rule_type', 'target', 'coefficient_value', 'constant_value', 'order', 'detail']
+        fields = '__all__'
         widgets = {
             'id': HiddenInput(),
             'user': HiddenInput(),
+            'account': HiddenInput(),
             'subcategory': HiddenInput(),
+            'io_type': HiddenInput(),
             'rule_type': HiddenInput(),
             'target': HiddenInput(),
-            'coefficient_value': HiddenInput(),
-            'constant_value': HiddenInput(),
+            'target_io_type': HiddenInput(),
+            'coefficient': HiddenInput(),
+            'constant': HiddenInput(),
             'order': HiddenInput(),
             'detail': HiddenInput()
         }
@@ -102,7 +106,7 @@ class DeleteRuleModelForm(ModelForm):
 class DeleteBudgetModelForm(ModelForm):
     class Meta:
         model = Budget
-        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
+        fields = '__all__'
         widgets = {
             'id': HiddenInput(),
             'user': HiddenInput(),
@@ -116,7 +120,7 @@ class DeleteBudgetModelForm(ModelForm):
 class DeleteTransactionModelForm(ModelForm):
     class Meta:
         model = Transaction
-        fields = ['id', 'user', 'subcategory', 'account', 'io_type', 'value', 'date']
+        fields = '__all__'
         widgets = {
             'id': HiddenInput(),
             'user': HiddenInput(),

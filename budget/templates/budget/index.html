@@ -40,20 +40,31 @@
 {% endblock %}
 {% block content_budget %}
 <div class="d-flex justify-content-between">
-    <div class="p2">
-        <h3 class="page-header">{{ title }} View</h3>
+    <div class="p-2 align-self-end">
+        <div>
+            <h3 class="page-header">{{ title }}</h3>
+        </div>
+        <div>
+            {% if title == 'Monthly' %}
+            <a class="btn btn-secondary btn-sm" href="{% url 'yearly_view' %}" role="button">Yearly</a>
+            {% else %}
+            <a class="btn btn-secondary btn-sm" href="{% url 'monthly_view' %}" role="button">Monthly</a>
+            {% endif %}
+        </div>
     </div>
     <div class="p2">
-        <form class="form-group" method="POST">{% csrf_token %}
-            <div class="p2">
-                {% for key, options in populate_budget.items %}
+        <form method="POST">{% csrf_token %}
+            {% for key, options in populate_budget.items %}
+            <div>
                 <label for="populate_{{ key }}_id"><small>{{ key }}:</small></label>
                 <select name="populate_{{ key }}" id="populate_{{ key }}_id">
                     {% for option in options %}
                     <option value="{{ option }}">{{ option }}</option>
                     {% endfor %}
                 </select>
-                {% endfor %}
+            </div>
+            {% endfor %}
+            <div>
                 <button class="btn btn-secondary btn-sm" type="submit">Add Budget</button>
             </div>
         </form> 

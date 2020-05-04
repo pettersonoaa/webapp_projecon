@@ -339,7 +339,7 @@ def PopulateMonth(user, year, month):
                     date=date(year=year, month=month, day=1)
                 )
     except:
-        pass
+        print('erro: non-seassonal')
     
     # seassonal:
     try:
@@ -365,4 +365,48 @@ def PopulateMonth(user, year, month):
                 date=date(year=year, month=month, day=1)
             )
     except:
-        pass
+        print('erro: seassonal')
+
+    try:
+        from datetime import timedelta
+        rules = Rule.objects.order_by('order', 'subcategory__order', 'target__order')
+        for rule in rules:
+            current_month_target = Budget.objects.get(
+                user=user, 
+                account=rule.account,
+                subcategory=rule.target,
+                io_type=rule.target_io_type,
+                date__year=year,
+                date__month=month
+            )
+            value = rule.constant + rule.coefficient * current_month_target.value
+            if rule.rule_type == 'proportional to':
+                last_month = date(year,month,1) + timedelta(days=-1)
+                last_month_subcategory = Budget.objects.get(
+                    user=user, 
+                    account=rule.account,
+                    subcategory=rule.subcategory,
+                    io_type=rule.io_type,
+                    date__year=last_month.year,
+                    date__month=last_month.month
+                )
+                last_month_target = Budget.objects.get(
+                    user=user, 
+                    account=rule.account,
+                    subcategory=rule.target,
+                    io_type=rule.target_io_type,
+                    date__year=last_month.year,
+                    date__month=last_month.month
+                )
+                value = rule.constant + (current_month_target.value / last_month_target.value * rule.coefficient) * last_month_subcategory.value
+                print('value: ', value)
+            obj, created = Budget.objects.update_or_create(
+                user=current_month_target.user,
+                subcategory=rule.subcategory,
+                account=current_month_target.account,
+                io_type=current_month_target.io_type,
+                date=current_month_target.date,
+                value= value
+            )
+    except:
+        print('erro: rule')

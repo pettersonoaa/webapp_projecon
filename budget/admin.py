@@ -1,15 +1,17 @@
 from django.contrib import admin
 
 from .models import (
+    Account,
     Category,
     Subcategory,
-    Account,
+    Rule,
     Budget,
     Transaction
 )
 
+admin.site.register(Account)
 admin.site.register(Category)
 admin.site.register(Subcategory)
-admin.site.register(Account)
+admin.site.register(Rule)
 admin.site.register(Budget)
 admin.site.register(Transaction)
