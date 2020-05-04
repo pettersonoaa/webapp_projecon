@@ -316,26 +316,25 @@ def PopulateMonth(user, year, month):
             subcategory__is_seassonal=False,
             value__gt=0
         ).values(
+            'account',
             'subcategory'
         ).annotate(Max('date'))
-
         # get id from last filtered data
         for subcategory_row in filtered_subcategories:
             filtered_ids = Budget.objects.filter(
                 user=user,
+                account=subcategory_row['account'],
                 subcategory=subcategory_row['subcategory'],
                 date=subcategory_row['date__max']
-            ).values('id')
-
+            )
             # update / insert data
             for id_row in filtered_ids:
-                obj = Budget.objects.get(pk=id_row['id'])
                 obj, created = Budget.objects.update_or_create(
-                    user=obj.user,
-                    subcategory=obj.subcategory,
-                    account=obj.account,
-                    io_type=obj.io_type,
-                    value=obj.value,
+                    user=id_row.user,
+                    subcategory=id_row.subcategory,
+                    account=id_row.account,
+                    io_type=id_row.io_type,
+                    value=id_row.value,
                     date=date(year=year, month=month, day=1)
                 )
     except:
@@ -351,22 +350,21 @@ def PopulateMonth(user, year, month):
             value__gt=0,
             date__year=year-1,
             date__month=month
-        ).values('id')
-
+        )
         # update / insert data
         for id_row in filtered_ids:
-            obj = Budget.objects.get(pk=id_row['id'])
             obj, created = Budget.objects.update_or_create(
-                user=obj.user,
-                subcategory=obj.subcategory,
-                account=obj.account,
-                io_type=obj.io_type,
-                value=obj.value,
+                user=id_row.user,
+                subcategory=id_row.subcategory,
+                account=id_row.account,
+                io_type=id_row.io_type,
+                value=id_row.value,
                 date=date(year=year, month=month, day=1)
             )
     except:
         print('erro: seassonal')
 
+    # rules:
     try:
         from datetime import timedelta
         rules = Rule.objects.order_by('order', 'subcategory__order', 'target__order')
@@ -379,7 +377,9 @@ def PopulateMonth(user, year, month):
                 date__year=year,
                 date__month=month
             )
+            # do: value_t = const + coeff * target_t
             value = rule.constant + rule.coefficient * current_month_target.value
+            # get last month data id proportional is tagged
             if rule.rule_type == 'proportional to':
                 last_month = date(year,month,1) + timedelta(days=-1)
                 last_month_subcategory = Budget.objects.get(
@@ -398,8 +398,9 @@ def PopulateMonth(user, year, month):
                     date__year=last_month.year,
                     date__month=last_month.month
                 )
+                # do: value_t = const + (target_t / target_t-1) * coeff * value_t-1
                 value = rule.constant + (current_month_target.value / last_month_target.value * rule.coefficient) * last_month_subcategory.value
-                print('value: ', value)
+            # update / insert data
             obj, created = Budget.objects.update_or_create(
                 user=current_month_target.user,
                 subcategory=rule.subcategory,

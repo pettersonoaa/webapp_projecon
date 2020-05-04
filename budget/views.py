@@ -60,7 +60,7 @@ def monthly_view(request):
     try:
         account_table, error = DictAccountPivotTable(request.user, month=True)
         if error:
-            context = {'error_msg': 'Account without transaction: '+account_table+'.'}
+            context = {'error_msg': 'Account without transaction and/or budget: '+account_table+'.'}
             return render(request, 'budget/error.html', context)
         else:
             context = {

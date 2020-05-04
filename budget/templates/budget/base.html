@@ -49,8 +49,13 @@
         <br>
         <br>
         <br>
-        {% block content_budget %}
-        {% endblock %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 md-auto">
+                {% block content_budget %}{% endblock %}
+                </div>
+            </div>
+        </div>
     {% else %}
     <p>You are not logged in</p>
     <a href="{% url 'login' %}">login</a>
