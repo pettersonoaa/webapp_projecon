@@ -18,7 +18,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # these are 100% optional here
 # $PORT is set by Heroku
 ENV PORT=8888
-#ENV DEBUG=0
+ENV DEBUG=0
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
