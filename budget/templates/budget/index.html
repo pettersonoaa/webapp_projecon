@@ -139,5 +139,26 @@
     </table>
     <hr>
     {% endfor %}
+    <table class="table table-sm table-hover table-condensed table-responsive">
+        <tr class="tr-th-bg-normal">
+            <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col"></th>
+            {% for col in shared_bill %}
+            <th scope="col">{{ col.date }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">Shared Bills</th>
+            {% for col in shared_bill %}
+            <td scope="col">
+                {% if col.transaction > 0 %}
+                    <a class="font-weight-bold">{{ col.transaction|floatformat:"0" }}</a>
+                    <small><a class="text-secondary font-weight-bold">{{ col.budget|floatformat:"0" }}</a></small>
+                {% else %}
+                    <a class="text-secondary font-weight-bold">{{ col.budget|floatformat:"0" }}</a>
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+    </table>
 </div>
 {% endblock %}

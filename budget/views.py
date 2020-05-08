@@ -28,7 +28,8 @@ from .functions import (
     ModelGroupBy,
     DictPivotTable,
     DictAccountPivotTable,
-    PopulateMonth
+    PopulateMonth,
+    SharedBill
 )
 
 
@@ -41,7 +42,7 @@ def index_view(request):
 @login_required
 def monthly_view(request):
 
-    # populate Budget
+    # form: populate Budget
     model = Budget.objects.values('date__year').distinct()
     populate_budget = {
         'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
@@ -56,19 +57,17 @@ def monthly_view(request):
         )
         PopulateMonth(request.user, populate_date.year, populate_date.month)
 
-    # load table
+    # load main table
     try:
-        account_table, error = DictAccountPivotTable(request.user, month=True)
-        if error:
-            context = {'error_msg': 'Account without transaction and/or budget: '+account_table+'.'}
-            return render(request, 'budget/error.html', context)
-        else:
-            context = {
-                'title': 'Monthly', 
-                'accounts_table': account_table,
-                'populate_budget': populate_budget
-            }
-            return render(request, 'budget/index.html', context)
+        account_table = DictAccountPivotTable(request.user, month=True)
+        shared_bill = SharedBill(request.user, month=True)
+        context = {
+            'title': 'Monthly', 
+            'accounts_table': account_table,
+            'populate_budget': populate_budget,
+            'shared_bill': shared_bill
+        }
+        return render(request, 'budget/index.html', context)
     except:
         context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
         return render(request, 'budget/error.html', context)
@@ -76,7 +75,7 @@ def monthly_view(request):
 @login_required
 def yearly_view(request):
 
-    # populate Budget
+    # form: populate Budget
     model = Budget.objects.values('date__year').distinct()
     populate_budget = {
         'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
@@ -91,19 +90,17 @@ def yearly_view(request):
         )
         PopulateMonth(request.user, populate_date.year, populate_date.month)
 
-    # load table
+    # load main table
     try:
-        account_table, error = DictAccountPivotTable(request.user, month=False)
-        if error:
-            context = {'error_msg': 'Account without transaction: '+account_table+'.'}
-            return render(request, 'budget/error.html', context)
-        else:
-            context = {
-                'title': 'Yearly', 
-                'accounts_table': account_table,
-                'populate_budget': populate_budget
-            }
-            return render(request, 'budget/index.html', context)
+        account_table = DictAccountPivotTable(request.user, month=False)
+        shared_bill = SharedBill(request.user, month=False)
+        context = {
+            'title': 'Yearly', 
+            'accounts_table': account_table,
+            'populate_budget': populate_budget,
+            'shared_bill': shared_bill
+        }
+        return render(request, 'budget/index.html', context)
     except:
         context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
         return render(request, 'budget/error.html', context)

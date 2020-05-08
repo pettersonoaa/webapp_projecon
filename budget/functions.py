@@ -1,4 +1,4 @@
-from django.db.models import Sum, Max
+from django.db.models import Sum, Max, F
 from pandas import DataFrame, merge
 from datetime import date, datetime
 
@@ -34,12 +34,14 @@ def MakeTableDict (model, col_names=[]):
 def ModelGroupBy (Model, user, account, year=True, month=True, day=False):
     if year and month and day:
         grouped_model = Model.objects.filter(user=user, account=account).values(
+            'subcategory__is_shared',
             'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
     elif year and month:
         grouped_model = Model.objects.filter(user=user, account=account).values(
+            'subcategory__is_shared',
             'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date__year', 'date__month'
         ).annotate(Sum('value'))
@@ -48,21 +50,38 @@ def ModelGroupBy (Model, user, account, year=True, month=True, day=False):
         return df.drop(columns=['date__year', 'date__month'])
     elif year:
         grouped_model = Model.objects.filter(user=user, account=account).values(
+            'subcategory__is_shared',
             'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date__year'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__year': 'date'})
     elif month:
         grouped_model = Model.objects.filter(user=user, account=account).values(
+            'subcategory__is_shared',
             'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
             'date__month'
         ).annotate(Sum('value'))
         return DataFrame(grouped_model).rename(columns={'date__month': 'date'})
     else:
         grouped_model = Model.objects.filter(user=user, account=account).values(
+            'subcategory__is_shared',
             'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
+
+def SettingDateFormats (year, month, day):
+    if year and month and day:
+        return '%Y-%m-%d', '%a%d'
+    elif year and month:
+        return '%Y%m', '%b%y'
+    elif year and not month:
+        return '%Y', '%Y'
+    elif month and not year:
+        return '%m', '%b'
+    elif day:
+        return '%Y-%m-%d', '%d'
+    else:
+        raise Exception('date format problem')
 
 # calculate budget fill ratio and colors
 def RatioCalc(transaction, budget):
@@ -78,18 +97,60 @@ def RatioCalc(transaction, budget):
         ratio_color = 'success'
     return ratio, ratio_color
 
+def SharedBill (user, month=True):
+    # setting date formats
+    date_format_in, date_format_out = SettingDateFormats(year=True, month=month, day=False)
+
+    from .models import Budget, Transaction
+    model = {
+        'budget': Budget,
+        'transaction': Transaction
+    }
+    dataframe = {}
+    for key in model:
+        if month:
+            dataframe[key] = DataFrame(model[key].objects.filter(
+                user=user,
+                subcategory__is_shared=True
+            ).values(
+                'date__year', 'date__month'
+            ).annotate(Sum('value')))
+            dataframe[key]['date'] = dataframe[key]['date__year'] * 100 + dataframe[key]['date__month']
+            dataframe[key] = dataframe[key].drop(columns=['date__year', 'date__month'])
+        else:
+            dataframe[key] = DataFrame(model[key].objects.filter(
+                user=user,
+                subcategory__is_shared=True
+            ).values(
+                'date__year'
+            ).annotate(Sum('value'))).rename(columns={'date__year': 'date'})
+
+    df = merge(
+        dataframe['budget'], 
+        dataframe['transaction'], 
+        suffixes=('_budget', '_transaction'),
+        how='outer',
+        on=['date']
+    ).fillna(0).set_index('date').rename(columns={'value__sum_transaction': 'transaction', 'value__sum_budget': 'budget'}).T.to_dict()
+    
+    dl = []
+    for date in df:
+        date_label = datetime.strptime(str(date), date_format_in)
+        date_label = date_label.strftime(date_format_out)
+        dl.append(
+            {
+                'date': date_label,
+                'transaction': df[date]['transaction'],
+                'budget': df[date]['budget']
+            }
+        )
+    return dl
+
 # populate table with aggregated data
 def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
 
     # setting date formats
-    if year and month and day:
-        date_format_in, date_format_out = '%Y-%m-%d', '%a%d'
-    elif year and month:
-        date_format_in, date_format_out = '%Y%m', '%b%y'
-    elif year:
-        date_format_in, date_format_out = '%Y', '%Y'
-    elif month:
-        date_format_in, date_format_out = '%m', '%b'
+    date_format_in, date_format_out = SettingDateFormats(year=year, month=month, day=day)
 
     # extract aggregated data
     from .models import Budget, Transaction
@@ -300,10 +361,18 @@ def DictAccountPivotTable(user, year=True, month=True, day=False):
     dict_account = {}
     for account in account_model:
         try:
-            dict_account[account['name']] = DictPivotTable(user=user, account=account['id'], acc_value=account['value'], year=year, month=month, day=day)
+            dict_account[account['name']] = DictPivotTable(
+                user=user, 
+                account=account['id'], 
+                acc_value=account['value'], 
+                year=year, 
+                month=month, 
+                day=day
+            )
         except:
-            return account['name'], True
-    return dict_account, False
+            context = {'error_msg': 'Account without transaction and/or budget: '+account['name']+'.'}
+            return render(request, 'budget/error.html', context)
+    return dict_account
 
 def PopulateMonth(user, year, month):
     from .models import Budget
