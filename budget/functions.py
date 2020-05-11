@@ -131,7 +131,7 @@ def SharedBill (user, month=True):
         suffixes=('_budget', '_transaction'),
         how='outer',
         on=['date']
-    ).fillna(0).set_index('date').sort_index(axis=1).rename(columns={'value__sum_transaction': 'transaction', 'value__sum_budget': 'budget'})
+    ).fillna(0).set_index('date').rename(columns={'value__sum_transaction': 'transaction', 'value__sum_budget': 'budget'})
     df = df.T.sort_index(axis=1).to_dict()
     
     dl = []
