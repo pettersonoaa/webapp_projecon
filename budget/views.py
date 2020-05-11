@@ -42,6 +42,8 @@ def index_view(request):
 @login_required
 def monthly_view(request):
 
+    io_type_is_unstacked = True
+
     # form: populate Budget
     model = Budget.objects.values('date__year').distinct()
     populate_budget = {
@@ -50,12 +52,19 @@ def monthly_view(request):
     }
     populate_budget['year'].append(populate_budget['year'][-1]+1)
     populate_budget['year'].append(populate_budget['year'][0]-1)
+
+    # request POST
     if request.method == 'POST':
-        populate_date = datetime.strptime(
-            request.POST['populate_year']+request.POST['populate_month'], 
-            '%Y%b'
-        )
-        PopulateMonth(request.user, populate_date.year, populate_date.month)
+        if 'stack_io_type' in request.POST:
+            io_type_is_unstacked = False
+        elif 'unstack_io_type' in request.POST:
+            io_type_is_unstacked = True
+        elif 'populate_budget' in request.POST:
+            populate_date = datetime.strptime(
+                request.POST['populate_year']+request.POST['populate_month'], 
+                '%Y%b'
+            )
+            PopulateMonth(request.user, populate_date.year, populate_date.month)
 
     # load main table
     try:
@@ -65,30 +74,40 @@ def monthly_view(request):
             'title': 'Monthly', 
             'accounts_table': account_table,
             'populate_budget': populate_budget,
-            'shared_bill': shared_bill
+            'shared_bill': shared_bill,
+            'io_type_is_unstacked': io_type_is_unstacked
         }
         return render(request, 'budget/index.html', context)
     except:
         context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
         return render(request, 'budget/error.html', context)
-    
+
 @login_required
 def yearly_view(request):
+
+    io_type_is_unstacked = True
 
     # form: populate Budget
     model = Budget.objects.values('date__year').distinct()
     populate_budget = {
         'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
-        'year': [i['date__year'] for i in model]
+        'year': [i['date__year'] for i in model],
     }
     populate_budget['year'].append(populate_budget['year'][-1]+1)
     populate_budget['year'].append(populate_budget['year'][0]-1)
+
+    # request POST
     if request.method == 'POST':
-        populate_date = datetime.strptime(
-            request.POST['populate_year']+request.POST['populate_month'], 
-            '%Y%b'
-        )
-        PopulateMonth(request.user, populate_date.year, populate_date.month)
+        if 'stack_io_type' in request.POST:
+            io_type_is_unstacked = False
+        elif 'unstack_io_type' in request.POST:
+            io_type_is_unstacked = True
+        elif 'populate_budget' in request.POST:
+            populate_date = datetime.strptime(
+                request.POST['populate_year']+request.POST['populate_month'], 
+                '%Y%b'
+            )
+            PopulateMonth(request.user, populate_date.year, populate_date.month)
 
     # load main table
     try:
@@ -98,13 +117,14 @@ def yearly_view(request):
             'title': 'Yearly', 
             'accounts_table': account_table,
             'populate_budget': populate_budget,
-            'shared_bill': shared_bill
+            'shared_bill': shared_bill,
+            'io_type_is_unstacked': io_type_is_unstacked
         }
         return render(request, 'budget/index.html', context)
     except:
         context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
         return render(request, 'budget/error.html', context)
-    
+       
 
 
 

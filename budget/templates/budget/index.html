@@ -28,24 +28,32 @@
 {% endblock %}
 {% block content_budget %}
 <div class="d-flex justify-content-between">
-    <div class="p-2 align-self-end">
-        <div>
-            <h3 class="page-header">{{ title }}</h3>
-        </div>
-        <div>
-            {% if title == 'Monthly' %}
-            <a class="btn btn-secondary btn-sm" href="{% url 'yearly_view' %}" role="button">Yearly</a>
-            {% else %}
-            <a class="btn btn-secondary btn-sm" href="{% url 'monthly_view' %}" role="button">Monthly</a>
-            {% endif %}
-        </div>
+    <div>
+        <h1 class="page-header">{{ title }}</h1>
+        <form method="POST">{% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    {% if title == 'Monthly' %}
+                    <a class="btn btn-secondary btn-sm" href="{% url 'yearly_view' %}" role="button">Yearly</a>
+                    {% else %}
+                    <a class="btn btn-secondary btn-sm" href="{% url 'monthly_view' %}" role="button">Monthly</a>
+                    {% endif %}
+                    {% if io_type_is_unstacked %}
+                    <button class="btn btn-info btn-sm" type="submit" name="stack_io_type">Stack</button>
+                    {% else %}
+                    <button class="btn btn-info btn-sm" type="submit" name="unstack_io_type">Unstack</button>
+                    {% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
-    <div class="p2 text-right">
+    <div class="text-right">
         <form method="POST">{% csrf_token %}
             {% for key, options in populate_budget.items %}
             <div>
-                <label class="text-secondary" for="populate_{{ key }}_id"><small>{{ key }}:</small></label>
-                <select name="populate_{{ key }}" id="populate_{{ key }}_id">
+                <label class="text-secondary col-form-label col-form-label-sm" for="populate_{{ key }}_id"><small>{{ key }}:</small></label>
+                <select class="selectpicker" name="populate_{{ key }}" id="populate_{{ key }}_id">
                     {% for option in options %}
                     <option value="{{ option }}">{{ option }}</option>
                     {% endfor %}
@@ -53,15 +61,14 @@
             </div>
             {% endfor %}
             <div>
-                <button class="btn btn-secondary btn-sm" type="submit">Add Budget</button>
+                <button class="btn btn-success btn-sm" type="submit" name="populate_budget">+Budget</button>
             </div>
         </form> 
     </div>
 </div>
-<hr>
 <div class="wrapper">
     {% for account_name, pivot_table in accounts_table.items %}
-    <h6><small>Account: </small>{{ account_name }}</h6><hr>
+    <h6><small>Account: </small><strong>{{ account_name }}</strong></h6>
     <table class="table table-sm table-hover table-condensed table-responsive">
         <thead>
             <tr class="tr-th-bg-normal">
@@ -78,26 +85,28 @@
             {% for io_name, io_rows in pivot_table.rows.items %}
                 {% for total_label, rows in io_rows.items %}
                     {% for row in rows %}
-                    <tr class="{% if total_label == 'total' %}tr-th-bg-light{% endif %}"> 
-                        {% for col in row %}
-                            {% if col.is_atribute %}
-                            <th class="sticky-col sticky-col-{{ col.sticky }} {% if total_label == 'total' %}sticky-col-bg-light{% endif %} font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
-                            {% else %}
-                            <td>
-                                {% if col.transaction != 0 %}
-                                    <a class="font-weight-{{ col.transaction_weight }}">{{ col.transaction|floatformat:"0" }}</a>
-                                    <small><a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a></small>
-                                    <div class="progress" style="height: 2px;">
-                                        <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
-                                    </div>
-                                {% elif col.budget == 0 and total_label != 'total' %}
+                        {% if io_type_is_unstacked or total_label == 'total' %}
+                        <tr class="{% if total_label == 'total' %}tr-th-bg-light{% endif %}"> 
+                            {% for col in row %}
+                                {% if col.is_atribute %}
+                                <th class="sticky-col sticky-col-{{ col.sticky }} {% if total_label == 'total' %}sticky-col-bg-light{% endif %} font-weight-{{ col.weight }}" scope="row">{{ col.atribute }}</th>
                                 {% else %}
-                                    <a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a>
+                                <td>
+                                    {% if col.transaction != 0 %}
+                                        <a class="font-weight-{{ col.transaction_weight }}">{{ col.transaction|floatformat:"0" }}</a>
+                                        <small><a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a></small>
+                                        <div class="progress" style="height: 2px;">
+                                            <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
+                                        </div>
+                                    {% elif col.budget == 0 and total_label != 'total' %}
+                                    {% else %}
+                                        <a class="text-secondary font-weight-{{ col.budget_weight }}">{{ col.budget|floatformat:"0" }}</a>
+                                    {% endif %}
+                                </td>
                                 {% endif %}
-                            </td>
-                            {% endif %}
-                        {% endfor %}
-                    </tr>
+                            {% endfor %}
+                        </tr>
+                        {% endif %}
                     {% endfor %}
                 {% endfor %}
             {% endfor %}
@@ -137,8 +146,8 @@
             </tr>
         </tfoot>
     </table>
-    <hr>
     {% endfor %}
+    <hr>
     <table class="table table-sm table-hover table-condensed table-responsive">
         <tr class="tr-th-bg-normal">
             <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col"></th>
