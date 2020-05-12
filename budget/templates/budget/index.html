@@ -151,32 +151,6 @@
     </table>
     {% endfor %}
     <hr>
-    <!-- Available Table -->
-    <h6><strong>Available at the end of period</strong></h6>
-    <table class="table table-sm table-hover table-condensed table-responsive">
-        <tr class="tr-th-bg-normal">
-            <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">Acc. type</th>
-            {% for date in available.head %}
-            <th scope="col">{{ date }}</th>
-            {% endfor %}
-        </tr>
-        {% for acc_type, cols in available.body.items %}
-            <tr class="tr-th-bg-normal">
-                <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">{{ acc_type }}</th>
-                {% for col in cols %}
-                <td scope="col">
-                    {% if col.transaction_show %}
-                        <a class="font-weight-bold">{{ col.transaction|floatformat:"0" }}</a>
-                        <small><a class="text-secondary font-weight-bold">{{ col.budget|floatformat:"0" }}</a></small>
-                    {% else %}
-                        <a class="text-secondary font-weight-bold">{{ col.budget|floatformat:"0" }}</a>
-                    {% endif %}
-                </td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-    </table>
-    <hr>
     <!-- Shared Bill Table -->
     <h6><strong>Shared Bill</strong></h6>
     <table class="table table-sm table-hover table-condensed table-responsive">
@@ -199,6 +173,31 @@
             </td>
             {% endfor %}
         </tr>
+    </table>
+    <hr>
+    <!-- Available Table -->
+    <h6><strong>Available at the end of period</strong></h6>
+    <table class="table table-sm table-hover table-condensed table-responsive">
+        <tr class="tr-th-bg-normal">
+            <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">Acc. type</th>
+            {% for date in available.head %}
+            <th scope="col">{{ date }}</th>
+            {% endfor %}
+        </tr>
+        {% for acc_type, cols in available.body.items %}
+            <tr class="tr-th-bg-normal">
+                <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">{{ acc_type }}</th>
+                {% for col in cols %}
+                <td scope="col">
+                    {% if col.transaction_show %}
+                        <a class="font-weight-bold">{{ col.transaction|floatformat:"0" }}</a>
+                    {% else %}
+                        <a class="text-secondary font-weight-bold">{{ col.budget|floatformat:"0" }}</a>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
     </table>
     <hr>
 </div>
