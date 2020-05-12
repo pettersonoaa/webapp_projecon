@@ -25,4 +25,6 @@ urlpatterns = [
     path('delete_rule/<int:pk>', views.delete_rule_view, name='delete_rule_view'),
     path('delete_budget/<int:pk>', views.delete_budget_view, name='delete_budget_view'),
     path('delete_transaction/<int:pk>', views.delete_transaction_view, name='delete_transaction_view'),
+
+    path('list/<model_name>/<io_type>/<subcategory_name>/<int:year>/<int:month>', views.list_view, name='list_view'),
 ]

@@ -29,8 +29,9 @@ from .functions import (
     LoadMainTable
 )
 
-
-
+##############################
+######## VIEW TABLES #########
+##############################
 
 @login_required
 def index_view(request):
@@ -91,7 +92,9 @@ def yearly_view(request):
 
 
 
-
+##############################
+########     ADD     #########
+##############################
 
 
 @login_required
@@ -422,7 +425,9 @@ def add_transaction_view(request):
 
 
 
-
+##############################
+########   UPDATE    #########
+##############################
 
 @login_required
 def update_account_view(request, pk):
@@ -503,7 +508,9 @@ def update_transaction_view(request, pk):
     return render(request, 'budget/update.html', context=context)
 
 
-
+##############################
+########    DELETE   #########
+##############################
 
 @login_required
 def delete_rule_view(request, pk):
@@ -544,3 +551,67 @@ def delete_transaction_view(request, pk):
     }
     return render(request, 'budget/delete.html', context=context)
 
+
+
+
+
+##############################
+########    LISTS    #########
+##############################
+
+@login_required
+def list_view(request, model_name, io_type, subcategory_name, year, month):
+
+    user = request.user
+    Model = {
+        'transaction': Transaction,
+        'budget': Budget
+    }
+    
+    # initialize model
+    model = Model[model_name].objects
+
+    if subcategory_name != 'io_type_total':
+        model = model.filter(subcategory__name=subcategory_name)
+    
+    model = model.filter(
+        io_type=io_type,
+        date__year=year,
+        date__month=month
+    ).values(
+        'account__name', 
+        'subcategory__category__name', 
+        'subcategory__name', 
+        'io_type', 
+        'value', 
+        'date', 
+        'id'
+    ).order_by(
+        '-date', 
+        'io_type', 
+        'account__order', 
+        'subcategory__category__order', 
+        'subcategory__order'
+    )
+    col_names = [
+        'Account', 
+        'Category', 
+        'Subcategory', 
+        'Io type', 
+        'Value', 
+        'Date', 
+        'ID'
+    ]
+    table = MakeTableDict(model=model, col_names=col_names)
+    
+    # render
+    context = {
+        'title': model_name, 
+        #'form': form, 
+        #'form2': form2, 
+        'table': table,
+        'update_url': 'update_'+model_name+'_view',
+        'delete_button': True,
+        'delete_url': 'delete_'+model_name+'_view'
+    }
+    return render(request, 'budget/add.html', context=context)

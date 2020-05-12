@@ -329,6 +329,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                         dict_dummy['atribute'] = io_type
                     dict_row.append(dict_dummy)
                 elif col[1] == 'value__sum_transaction':
+                    date_label = datetime.strptime(str(col[0]), date_format_in)
                     transaction = balance[io_type]['transaction'][col[0]]
                     budget = balance[io_type]['budget'][col[0]]
                     ratio, ratio_color = RatioCalc(transaction, budget)
@@ -339,7 +340,11 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                         'ratio': ratio,
                         'ratio_color': ratio_color,
                         'transaction_weight': 'bold',
-                        'budget_weight': 'bold'
+                        'budget_weight': 'bold',
+                        'io_type': io_type,
+                        'subcategory_name': 'io_type_total',
+                        'year': date_label.year,
+                        'month': date_label.month
                     }
                     dict_row.append(dict_dummy)
             c += 1
@@ -350,8 +355,13 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
         c = 0
         ratio = 0
         dict_row = []
+        subcategory_name = ''
         for col in df.columns.values:
-            if col[0] != 'io_type':
+            if col[0] == 'io_type':
+                io_type = rows[c]
+            else:
+                if col[0] == 'subcategory__name':
+                    subcategory_name = rows[c]
                 if col[1] == '':
                     dict_dummy = {
                         'is_atribute': True, 
@@ -361,6 +371,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                     }
                     dict_row.append(dict_dummy)
                 elif col[1] == 'value__sum_transaction':
+                    date_label = datetime.strptime(str(col[0]), date_format_in)
                     transaction, budget = rows[c], rows[c-1]
                     ratio, ratio_color = RatioCalc(transaction, budget)
                     dict_dummy = {
@@ -370,7 +381,11 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
                         'ratio': ratio,
                         'ratio_color': ratio_color,
                         'transaction_weight': 'normal',
-                        'budget_weight': 'light'
+                        'budget_weight': 'light',
+                        'io_type': io_type,
+                        'subcategory_name': subcategory_name,
+                        'year': date_label.year,
+                        'month': date_label.month
                     }
                     dict_row.append(dict_dummy)
             c += 1
