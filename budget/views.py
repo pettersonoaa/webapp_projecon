@@ -25,11 +25,8 @@ from .forms import (
 ) 
 from .functions import (
     MakeTableDict,
-    ModelGroupBy,
-    DictPivotTable,
-    DictAccountPivotTable,
     PopulateMonth,
-    SharedBill
+    LoadMainTable
 )
 
 
@@ -42,16 +39,9 @@ def index_view(request):
 @login_required
 def monthly_view(request):
 
+    month = True
+    user = request.user
     io_type_is_unstacked = True
-
-    # form: populate Budget
-    model = Budget.objects.values('date__year').distinct()
-    populate_budget = {
-        'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
-        'year': [i['date__year'] for i in model],
-    }
-    populate_budget['year'].append(populate_budget['year'][-1]+1)
-    populate_budget['year'].append(populate_budget['year'][0]-1)
 
     # request POST
     if request.method == 'POST':
@@ -60,23 +50,13 @@ def monthly_view(request):
         elif 'unstack_io_type' in request.POST:
             io_type_is_unstacked = True
         elif 'populate_budget' in request.POST:
-            populate_date = datetime.strptime(
-                request.POST['populate_year']+request.POST['populate_month'], 
-                '%Y%b'
-            )
-            PopulateMonth(request.user, populate_date.year, populate_date.month)
+            date = request.POST['populate_year'] + request.POST['populate_month']
+            PopulateMonth(user=user, date=date)
 
-    # load main table
+    # load tables
     try:
-        account_table = DictAccountPivotTable(request.user, month=True)
-        shared_bill = SharedBill(request.user, month=True)
-        context = {
-            'title': 'Monthly', 
-            'accounts_table': account_table,
-            'populate_budget': populate_budget,
-            'shared_bill': shared_bill,
-            'io_type_is_unstacked': io_type_is_unstacked
-        }
+        context = LoadMainTable(user=user, month=month)
+        context['io_type_is_unstacked'] = io_type_is_unstacked
         return render(request, 'budget/index.html', context)
     except:
         context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
@@ -85,16 +65,9 @@ def monthly_view(request):
 @login_required
 def yearly_view(request):
 
+    month = False
+    user = request.user
     io_type_is_unstacked = True
-
-    # form: populate Budget
-    model = Budget.objects.values('date__year').distinct()
-    populate_budget = {
-        'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
-        'year': [i['date__year'] for i in model],
-    }
-    populate_budget['year'].append(populate_budget['year'][-1]+1)
-    populate_budget['year'].append(populate_budget['year'][0]-1)
 
     # request POST
     if request.method == 'POST':
@@ -103,23 +76,13 @@ def yearly_view(request):
         elif 'unstack_io_type' in request.POST:
             io_type_is_unstacked = True
         elif 'populate_budget' in request.POST:
-            populate_date = datetime.strptime(
-                request.POST['populate_year']+request.POST['populate_month'], 
-                '%Y%b'
-            )
-            PopulateMonth(request.user, populate_date.year, populate_date.month)
+            date = request.POST['populate_year'] + request.POST['populate_month']
+            PopulateMonth(user=user, date=date)
 
-    # load main table
+    # load tables
     try:
-        account_table = DictAccountPivotTable(request.user, month=False)
-        shared_bill = SharedBill(request.user, month=False)
-        context = {
-            'title': 'Yearly', 
-            'accounts_table': account_table,
-            'populate_budget': populate_budget,
-            'shared_bill': shared_bill,
-            'io_type_is_unstacked': io_type_is_unstacked
-        }
+        context = LoadMainTable(user=user, month=month)
+        context['io_type_is_unstacked'] = io_type_is_unstacked
         return render(request, 'budget/index.html', context)
     except:
         context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}

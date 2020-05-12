@@ -28,6 +28,7 @@
 {% endblock %}
 {% block content_budget %}
 <div class="d-flex justify-content-between">
+    <!-- Left Header: Buttons -->
     <div>
         <h1 class="page-header">{{ title }}</h1>
         <form method="POST">{% csrf_token %}
@@ -48,6 +49,7 @@
             </div>
         </form>
     </div>
+    <!-- Right Header: Form: Add Automatic Budget -->
     <div class="text-right">
         <form method="POST">{% csrf_token %}
             {% for key, options in populate_budget.items %}
@@ -67,6 +69,7 @@
     </div>
 </div>
 <div class="wrapper">
+    <!-- Main Table -->
     {% for account_name, pivot_table in accounts_table.items %}
     <h6><small>Account: </small><strong>{{ account_name }}</strong></h6>
     <table class="table table-sm table-hover table-condensed table-responsive">
@@ -148,6 +151,34 @@
     </table>
     {% endfor %}
     <hr>
+    <!-- Available Table -->
+    <h6><strong>Available at the end of period</strong></h6>
+    <table class="table table-sm table-hover table-condensed table-responsive">
+        <tr class="tr-th-bg-normal">
+            <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">Acc. type</th>
+            {% for date in available.head %}
+            <th scope="col">{{ date }}</th>
+            {% endfor %}
+        </tr>
+        {% for acc_type, cols in available.body.items %}
+            <tr class="tr-th-bg-normal">
+                <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">{{ acc_type }}</th>
+                {% for col in cols %}
+                <td scope="col">
+                    {% if col.transaction_show %}
+                        <a class="font-weight-bold">{{ col.transaction|floatformat:"0" }}</a>
+                        <small><a class="text-secondary font-weight-bold">{{ col.budget|floatformat:"0" }}</a></small>
+                    {% else %}
+                        <a class="text-secondary font-weight-bold">{{ col.budget|floatformat:"0" }}</a>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    <hr>
+    <!-- Shared Bill Table -->
+    <h6><strong>Shared Bill</strong></h6>
     <table class="table table-sm table-hover table-condensed table-responsive">
         <tr class="tr-th-bg-normal">
             <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col"></th>
@@ -155,8 +186,8 @@
             <th scope="col">{{ col.date }}</th>
             {% endfor %}
         </tr>
-        <tr>
-            <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">Shared Bills</th>
+        <tr class="tr-th-bg-normal">
+            <th class="sticky-col sticky-col-1 sticky-col-bg-normal" scope="col">Total</th>
             {% for col in shared_bill %}
             <td scope="col">
                 {% if col.transaction > 0 %}
@@ -169,5 +200,6 @@
             {% endfor %}
         </tr>
     </table>
+    <hr>
 </div>
 {% endblock %}

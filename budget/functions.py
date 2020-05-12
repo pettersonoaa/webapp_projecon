@@ -1,6 +1,7 @@
-from django.db.models import Sum, Max, F
+from django.db.models import Sum, Max, F, Q, Case, When, DecimalField
 from pandas import DataFrame, merge
 from datetime import date, datetime
+
 
 COLUMNS = {
     'label': {
@@ -10,6 +11,7 @@ COLUMNS = {
         'io_type': 'IO'
     }
 }
+
 
 # make table data for add template
 def MakeTableDict (model, col_names=[]):
@@ -29,6 +31,7 @@ def MakeTableDict (model, col_names=[]):
         table['rows'].append(row_list)
         i += 1
     return table
+
 
 # extract data from models by user and account
 def ModelGroupBy (Model, user, account, year=True, month=True, day=False):
@@ -69,6 +72,7 @@ def ModelGroupBy (Model, user, account, year=True, month=True, day=False):
         ).annotate(Sum('value'))
         return DataFrame(grouped_model)
 
+
 def SettingDateFormats (year, month, day):
     if year and month and day:
         return '%Y-%m-%d', '%a%d'
@@ -82,6 +86,7 @@ def SettingDateFormats (year, month, day):
         return '%Y-%m-%d', '%d'
     else:
         raise Exception('date format problem')
+
 
 # calculate budget fill ratio and colors
 def RatioCalc(transaction, budget):
@@ -97,10 +102,13 @@ def RatioCalc(transaction, budget):
         ratio_color = 'success'
     return ratio, ratio_color
 
+
 def SharedBill (user, month=True):
+
     # setting date formats
     date_format_in, date_format_out = SettingDateFormats(year=True, month=month, day=False)
 
+    # extract and group data from budget and transaction
     from .models import Budget, Transaction
     model = {
         'budget': Budget,
@@ -114,7 +122,7 @@ def SharedBill (user, month=True):
                 subcategory__is_shared=True
             ).values(
                 'date__year', 'date__month'
-            ).annotate(Sum('value')))
+            ).annotate(value=Sum('value')))
             dataframe[key]['date'] = dataframe[key]['date__year'] * 100 + dataframe[key]['date__month']
             dataframe[key] = dataframe[key].drop(columns=['date__year', 'date__month'])
         else:
@@ -123,29 +131,108 @@ def SharedBill (user, month=True):
                 subcategory__is_shared=True
             ).values(
                 'date__year'
-            ).annotate(Sum('value'))).rename(columns={'date__year': 'date'})
+            ).annotate(value=Sum('value'))).rename(columns={'date__year': 'date'})
 
+    # join and pivot table
     df = merge(
         dataframe['budget'], 
         dataframe['transaction'], 
         suffixes=('_budget', '_transaction'),
         how='outer',
         on=['date']
-    ).fillna(0).set_index('date').rename(columns={'value__sum_transaction': 'transaction', 'value__sum_budget': 'budget'})
+    ).fillna(0).set_index('date').rename(columns={'value_transaction': 'transaction', 'value_budget': 'budget'})
     df = df.T.sort_index(axis=1).to_dict()
     
+    # layout output
     dl = []
     for date in df:
-        date_label = datetime.strptime(str(date), date_format_in)
-        date_label = date_label.strftime(date_format_out)
         dl.append(
             {
-                'date': date_label,
+                'date': datetime.strptime(str(date), date_format_in).strftime(date_format_out),
                 'transaction': df[date]['transaction'],
                 'budget': df[date]['budget']
             }
         )
     return dl
+
+
+def AvailableTypeAccount (user, month=True):
+
+    # setting date formats
+    date_format_in, date_format_out = SettingDateFormats(year=True, month=month, day=False)
+
+    # extract and group data from budget, transaction and account
+    from .models import Budget, Transaction, Account
+    model = {
+        'budget': Budget,
+        'transaction': Transaction
+    }
+    dataframe = {}
+    for key in model:
+        if month:
+            dataframe[key] = DataFrame(model[key].objects.filter(user=user).values(
+                'account__acc_type', 'date__year', 'date__month'
+            ).annotate(value=Sum(Case(
+                When(io_type='out', then=-F('value')),
+                When(io_type='in', then='value'),
+                default = 0,
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )))).rename(columns={'account__acc_type': 'type'})
+            dataframe[key]['date'] = dataframe[key]['date__year'] * 100 + dataframe[key]['date__month']
+            dataframe[key] = dataframe[key].drop(columns=['date__year', 'date__month'])
+        else:
+            dataframe[key] = DataFrame(model[key].objects.filter(user=user).values(
+                'account__acc_type', 'date__year'
+            ).annotate(value=Sum(Case(
+                When(io_type='out', then=-F('value')),
+                When(io_type='in', then='value'),
+                default = 0,
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )))).rename(columns={'account__acc_type': 'type', 'date__year': 'date'})
+    acc = Account.objects.filter(user=user).values('acc_type', 'value')
+    initial_value = {}
+    for obj in acc:
+        initial_value[obj['acc_type']] = obj['value']
+
+    # join and pivot table
+    df = merge(
+        dataframe['budget'], 
+        dataframe['transaction'], 
+        suffixes=('_budget', '_transaction'),
+        how='outer',
+        on=['date', 'type']
+    ).rename(columns={'value_transaction': 'transaction', 'value_budget': 'budget'})
+    df['transaction_show'] = df['transaction'].isnull()
+    date_list = df['date'].sort_values().unique()
+    df = df.set_index(['date', 'type']).fillna(0).to_dict()
+    
+    # layout output
+    dd = {
+        'head': [datetime.strptime(str(date), date_format_in).strftime(date_format_out) for date in date_list],
+        'body': {}
+    }
+    for acc_type in initial_value:
+        dd['body'][acc_type] = []
+        transaction_show = True
+        transaction = initial_value[acc_type]
+        budget = initial_value[acc_type]
+        for date in date_list:
+            try:
+                if df['transaction_show'][(date, acc_type)]:
+                    transaction_show = False
+                transaction += df['transaction'][(date, acc_type)]
+                budget += df['budget'][(date, acc_type)]
+            except:
+                pass
+            dd['body'][acc_type].append(
+                    {
+                        'transaction_show': transaction_show,
+                        'transaction': transaction, 
+                        'budget': budget
+                    }
+                )
+    return dd
+
 
 # populate table with aggregated data
 def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
@@ -153,7 +240,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
     # setting date formats
     date_format_in, date_format_out = SettingDateFormats(year=year, month=month, day=day)
 
-    # extract aggregated data
+    # extract aggregated data and join budget and transaction
     from .models import Budget, Transaction
     model_columns = [
         'io_type', 'subcategory__category__order','subcategory__category__name', 'subcategory__order','subcategory__name', 
@@ -355,6 +442,7 @@ def DictPivotTable (user, account, acc_value, year=True, month=True, day=False):
     
     return df_dict
 
+
 # populate accounts table
 def DictAccountPivotTable(user, year=True, month=True, day=False):
     from .models import Account
@@ -375,8 +463,16 @@ def DictAccountPivotTable(user, year=True, month=True, day=False):
             return render(request, 'budget/error.html', context)
     return dict_account
 
-def PopulateMonth(user, year, month):
+
+def PopulateMonth(user, date):
+    
+    # setting date format: input = string, output = date
+    date = datetime.strptime(date, '%Y%b')
+    year, month = date.year, date.month
+
+    # load models
     from .models import Budget
+
     # non-seassonal: 
     try:
         # get last non-zero month by subcategory
@@ -481,3 +577,41 @@ def PopulateMonth(user, year, month):
             )
     except:
         print('erro: rule')
+
+
+def LoadMainTable (user, month):
+
+    # setting title
+    if month:
+        title = 'Monthly'
+    else:
+        title = 'Yearly'
+
+    # create 'option' labels for populate Budget form
+    from .models import Budget
+    model = Budget.objects.values('date__year').distinct()
+    populate_budget = {
+        'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
+        'year': [i['date__year'] for i in model],
+    }
+    populate_budget['year'].append(populate_budget['year'][-1]+1)
+    populate_budget['year'].append(populate_budget['year'][0]-1)
+
+    # create table by account (main tables)
+    account_table = DictAccountPivotTable(user=user, month=month)
+
+    # create available table, grouping data by account type
+    available = AvailableTypeAccount(user=user, month=month)
+
+    # create shared bills table, using is_shared flag from subcategory
+    shared_bill = SharedBill(user=user, month=month)
+
+    # return context dict
+    context = {
+        'title': title, 
+        'populate_budget': populate_budget,
+        'accounts_table': account_table,
+        'available': available,
+        'shared_bill': shared_bill,
+    }
+    return context
