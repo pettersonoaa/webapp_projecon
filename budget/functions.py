@@ -597,12 +597,24 @@ def DictAccountPivotTable(user, year=True, month=True, day=False):
             return render(request, 'budget/error.html', context)
     return dict_account
 
+def PopulateBudgetDate (user):
 
-def PopulateMonth(user, date):
+    from .models import Budget
+    model = Budget.objects.filter(user=user).values('date__year').distinct()
+
+    year = [i['date__year'] for i in model]
+    year.append(year[-1] + 1)
+    year.append(year[0] - 1)
+
+    month = [date(1,i+1,1).strftime('%b') for i in range(12)]
+
+    return  {'month': month, 'year': sorted(year, reverse=True)}
+
+def PopulateMonth (user, populate_date):
     
     # setting date format: input = string, output = date
-    date = datetime.strptime(date, '%Y%b')
-    year, month = date.year, date.month
+    populate_date = datetime.strptime(populate_date, '%Y%b')
+    year, month = populate_date.year, populate_date.month
 
     # load models
     from .models import Budget
@@ -711,41 +723,3 @@ def PopulateMonth(user, date):
             )
     except:
         print('erro: rule')
-
-
-def LoadMainTable (user, month):
-
-    # setting title
-    if month:
-        title = 'Monthly'
-    else:
-        title = 'Yearly'
-
-    # create 'option' labels for populate Budget form
-    from .models import Budget
-    model = Budget.objects.values('date__year').distinct()
-    populate_budget = {
-        'month': [date(1,i+1,1).strftime('%b') for i in range(12)],
-        'year': [i['date__year'] for i in model],
-    }
-    populate_budget['year'].append(populate_budget['year'][-1]+1)
-    populate_budget['year'].append(populate_budget['year'][0]-1)
-
-    # create table by account (main tables)
-    account_table = DictAccountPivotTable(user=user, month=month)
-
-    # create available table, grouping data by account type
-    available = AvailableTypeAccount(user=user, month=month)
-
-    # create shared bills table, using is_shared flag from subcategory
-    shared_bill = SharedBill(user=user, month=month)
-
-    # return context dict
-    context = {
-        'title': title, 
-        'populate_budget': populate_budget,
-        'accounts_table': account_table,
-        'available': available,
-        'shared_bill': shared_bill,
-    }
-    return context

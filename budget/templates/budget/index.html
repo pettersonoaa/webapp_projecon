@@ -1,5 +1,5 @@
 {% extends "budget/base.html" %}
-{% block head_title_budget %}{{ title }}{% endblock %}
+{% block head_title_budget %}{{ title|capfirst }}{% endblock %}
 {% block head_budget %}
 <style>
     .wrapper {
@@ -30,11 +30,11 @@
 <div class="d-flex justify-content-between">
     <!-- Left Header: Buttons -->
     <div>
-        <h1 class="page-header">{{ title }}</h1>
+        <h1 class="page-header">{{ title|capfirst }}</h1>
         <form method="POST">{% csrf_token %}
             <div class="form-row">
                 <div class="form-group">
-                    {% if title == 'Monthly' %}
+                    {% if title == 'monthly' %}
                     <a class="btn btn-secondary btn-sm" href="{% url 'index_view' period='yearly' %}" role="button">Yearly</a>
                     {% else %}
                     <a class="btn btn-secondary btn-sm" href="{% url 'index_view' period='monthly' %}" role="button">Monthly</a>
@@ -96,14 +96,14 @@
                                 {% else %}
                                 <td>
                                     {% if col.transaction != 0 %}
-                                        <a class="text-dark font-weight-{{ col.transaction_weight }}" href="{% url 'list_view' model_name='transaction' io_type=col.io_type subcategory_name=col.subcategory_name year=col.year month=col.month %}">{{ col.transaction|floatformat:"0" }}</a>
-                                        <small><a class="text-secondary font-weight-{{ col.budget_weight }}" href="{% url 'list_view' model_name='budget' io_type=col.io_type subcategory_name=col.subcategory_name year=col.year month=col.month %}">{{ col.budget|floatformat:"0" }}</a></small>
+                                        <a class="text-dark font-weight-{{ col.transaction_weight }}" href="{% url 'list_view' model_name='transaction' period=title io_type=col.io_type subcategory_name=col.subcategory_name year=col.year month=col.month %}">{{ col.transaction|floatformat:"0" }}</a>
+                                        <small><a class="text-secondary font-weight-{{ col.budget_weight }}" href="{% url 'list_view' model_name='budget' period=title io_type=col.io_type subcategory_name=col.subcategory_name year=col.year month=col.month %}">{{ col.budget|floatformat:"0" }}</a></small>
                                         <div class="progress" style="height: 2px;">
                                             <div class="progress-bar bg-{{col.ratio_color}}" role="progressbar" style="width:{{col.ratio}}%;"></div>
                                         </div>
                                     {% elif col.budget == 0 and total_label != 'total' %}
                                     {% else %}
-                                        <a class="text-secondary font-weight-{{ col.budget_weight }}" href="{% url 'list_view' model_name='budget' io_type=col.io_type subcategory_name=col.subcategory_name year=col.year month=col.month %}">{{ col.budget|floatformat:"0" }}</a>
+                                        <a class="text-secondary font-weight-{{ col.budget_weight }}" href="{% url 'list_view' model_name='budget' period=title io_type=col.io_type subcategory_name=col.subcategory_name year=col.year month=col.month %}">{{ col.budget|floatformat:"0" }}</a>
                                     {% endif %}
                                 </td>
                                 {% endif %}
