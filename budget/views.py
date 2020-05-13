@@ -99,7 +99,6 @@ def index_view(request, period):
     except:
         context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
         return render(request, 'budget/error.html', context)
-    #return redirect('monthly_view')
 
 
 @login_required
@@ -137,7 +136,8 @@ def create_view(request, model_name):
             custom_form = MakeCustomForm(user, CUSTOM_FORM_LIST[model_name])
 
     # build table
-    table = MakeTableDict(model_name=model_name, user=user)
+    model = MODEL[model_name].objects.filter(user=user)
+    table = MakeTableDict(model_name=model_name, model=model)
 
     # render
     context = {
@@ -147,7 +147,7 @@ def create_view(request, model_name):
         'delete_button': ALLOW_DELETE_BUTTON[model_name]
     }
     if needs_custom:
-        context['form2'] = custom_form
+        context['custom_form'] = custom_form
     return render(request, 'budget/add.html', context=context)
 
 
@@ -194,56 +194,33 @@ def delete_view(request, model_name, pk):
 @login_required
 def list_view(request, model_name, io_type, subcategory_name, year, month):
 
+    # get logged user
     user = request.user
-    Model = {
-        'transaction': Transaction,
-        'budget': Budget
-    }
-    
-    # initialize model
-    model = Model[model_name].objects
 
-    if subcategory_name != 'io_type_total':
-        model = model.filter(subcategory__name=subcategory_name)
-    
+    # initialize model
+    model = MODEL[model_name].objects
+
+    # filter model
     model = model.filter(
+        user=user,
         io_type=io_type,
         date__year=year,
         date__month=month
-    ).values(
-        'account__name', 
-        'subcategory__category__name', 
-        'subcategory__name', 
-        'io_type', 
-        'value', 
-        'date', 
-        'id'
-    ).order_by(
-        '-date', 
-        'io_type', 
-        'account__order', 
-        'subcategory__category__order', 
-        'subcategory__order'
     )
-    col_names = [
-        'Account', 
-        'Category', 
-        'Subcategory', 
-        'Io type', 
-        'Value', 
-        'Date', 
-        'ID'
-    ]
-    table = MakeTableDict(model=model, col_names=col_names)
+
+    # add subcategory filter
+    if subcategory_name != 'io_type_total':
+        model = model.filter(
+            subcategory__name=subcategory_name
+        )
+
+    # make table to render
+    table = MakeTableDict(model_name=model_name, model=model)
     
     # render
     context = {
         'title': model_name, 
-        #'form': form, 
-        #'form2': form2, 
         'table': table,
-        'update_url': 'update_'+model_name+'_view',
-        'delete_button': True,
-        'delete_url': 'delete_'+model_name+'_view'
+        'delete_button': ALLOW_DELETE_BUTTON[model_name]
     }
     return render(request, 'budget/add.html', context=context)

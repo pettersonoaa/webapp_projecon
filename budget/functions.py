@@ -5,28 +5,31 @@ from datetime import date, datetime
 
 COLUMNS = {
     'label': {
+        'category__name': 'Category',
         'account__name': 'Account',
         'subcategory__category__name': 'Category',
         'subcategory__name': 'Subcategory',
-        'io_type': 'IO'
+        'target__category__name': 'Cat.',
+        'target__name': 'Target',
+        'target_io_type': 'IO',
+        'io_type': 'IO',
+        'is_active': 'Active',
+        'is_shared': 'Shared',
+        'is_seassonal': 'Seasson',
+        'acc_type': 'Type',
+        'rule_type': 'Rule',
+        'coefficient': 'Coeff',
+        'constant': 'Const'
     }
 }
 
 
-# make table data for add template
-def MakeTableDict (model_name, user):
+# make table for create and list template
+def MakeTableDict (model_name, model):
 
-    table = {'cols': [], 'rows': []}
-
-    from .models import Account, Category, Subcategory, Rule, Budget, Transaction
     # account
     if model_name == 'account':
-        table['cols'] = [
-            'Category', 
-            'Order', 
-            'ID'
-        ]
-        model = Account.objects.filter(user = user).values(
+        model = model.values(
             'name', 
             'acc_type', 
             'value', 
@@ -40,11 +43,7 @@ def MakeTableDict (model_name, user):
         )
     # category
     elif model_name == 'category':
-        table['cols'] = [
-            'Category', 
-            'Order', 
-            'ID']
-        model = Category.objects.filter(user = user).values(
+        model = model.values(
             'name', 
             'order', 
             'id'
@@ -54,17 +53,7 @@ def MakeTableDict (model_name, user):
         )
     # subcategory
     elif model_name == 'subcategory':
-        table['cols'] = [
-            'Category', 
-            'Subcategory', 
-            'Share bill', 
-            'Active', 
-            'Seassonal', 
-            'Details', 
-            'Order', 
-            'ID'
-        ]
-        model = Subcategory.objects.filter(user = user).values(
+        model = model.values(
             'category__name', 
             'name', 
             'is_shared', 
@@ -81,22 +70,7 @@ def MakeTableDict (model_name, user):
         )
     # rule
     elif model_name == 'rule':
-        table['cols'] = [
-            'Acc.',
-            'Category',
-            'Subcat.', 
-            'IO',
-            'Rule', 
-            'Category',
-            'Target', 
-            'IO',
-            'Coeff.', 
-            'Const.', 
-            'Order',
-            'Detail', 
-            'ID'
-        ]
-        model = Rule.objects.filter(user=user).values(
+        model = model.values(
             'account__name',
             'subcategory__category__name',
             'subcategory__name', 
@@ -119,17 +93,9 @@ def MakeTableDict (model_name, user):
             'subcategory__name', 
             'order'
         )
-    elif model_name == 'budget':
-        table['cols'] = [
-            'Account', 
-            'Category', 
-            'Subcategory', 
-            'Io type', 
-            'Value', 
-            'Date', 
-            'ID'
-        ]
-        model = Budget.objects.filter(user=user).values(
+    # budget or transaction
+    elif model_name == 'budget' or model_name == 'transaction':
+        model = model.values(
             'account__name', 
             'subcategory__category__name', 
             'subcategory__name', 
@@ -144,43 +110,28 @@ def MakeTableDict (model_name, user):
             'subcategory__category__order', 
             'subcategory__order'
         )
-    elif model_name == 'transaction':
-        table['cols'] = [
-            'Account', 
-            'Category', 
-            'Subcategory', 
-            'Io type', 
-            'Value', 
-            'Date', 
-            'ID'
-        ]
-        model = Transaction.objects.filter(user=user).values(
-            'account__name', 
-            'subcategory__category__name', 
-            'subcategory__name', 
-            'io_type', 
-            'value', 
-            'date', 
-            'id'
-        ).order_by(
-            '-date', 
-            'io_type', 
-            'account__order', 
-            'subcategory__category__order', 
-            'subcategory__order'
-        )
+    
+    # initialize return variable
+    table = {'cols': [], 'rows': []}
 
-    i = 0
-    for cols in model:
-        row_list = []
-        for row in cols:
-            if row == 'id':
+    # fill columns
+    for col in model[0]:
+        try:
+            table['cols'].append(COLUMNS['label'][col])
+        except:
+            table['cols'].append(col)
+
+    # fill rows
+    for row in model:
+        col_list = []
+        for col in row:
+            if col == 'id':
                 is_id = True
             else:
                 is_id = False
-            row_list.append({'value': model[i][row], 'is_id': is_id})
-        table['rows'].append(row_list)
-        i += 1
+            col_list.append({'value': row[col], 'is_id': is_id})
+        table['rows'].append(col_list)
+
     return table
 
 

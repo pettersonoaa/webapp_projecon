@@ -5,7 +5,7 @@
 {% block content_budget %}
 <h4><small>{% if form %}add: {% else %}list: {% endif %}</small>{{ title|capfirst }}</h4><hr>
 <form class="form-group" method="POST"> {% csrf_token %}
-    {% for key, value in form2.items %}
+    {% for key, value in custom_form.items %}
     <label for="{{ key }}_id">{{ key|capfirst }}:</label>
     <select name="{{ key }}" id="{{ key }}_id">
         {% for option in value %}
@@ -24,7 +24,7 @@
         <tr>
             {% for col in table.cols %}
             <th>
-                {% if col != 'ID' %}{{ col }}{% endif %}
+                {% if col|lower != 'id' %}{{ col|capfirst }}{% endif %}
             </th>
             {% endfor %}
         </tr>
