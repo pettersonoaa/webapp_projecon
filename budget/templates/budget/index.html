@@ -35,9 +35,9 @@
             <div class="form-row">
                 <div class="form-group">
                     {% if title == 'Monthly' %}
-                    <a class="btn btn-secondary btn-sm" href="{% url 'yearly_view' %}" role="button">Yearly</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'index_view' period='yearly' %}" role="button">Yearly</a>
                     {% else %}
-                    <a class="btn btn-secondary btn-sm" href="{% url 'monthly_view' %}" role="button">Monthly</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'index_view' period='monthly' %}" role="button">Monthly</a>
                     {% endif %}
                     {% if io_type_is_unstacked %}
                     <button class="btn btn-info btn-sm" type="submit" name="stack_io_type">Stack</button>

@@ -6,7 +6,7 @@
 <h4><small>{% if form %}add: {% else %}list: {% endif %}</small>{{ title|capfirst }}</h4><hr>
 <form class="form-group" method="POST"> {% csrf_token %}
     {% for key, value in form2.items %}
-    <label for="{{ key }}_id">{{ key }}:</label>
+    <label for="{{ key }}_id">{{ key|capfirst }}:</label>
     <select name="{{ key }}" id="{{ key }}_id">
         {% for option in value %}
         <option value="{{ option }}">{{ option }}</option>
@@ -35,11 +35,11 @@
             {% for col in row %}
             <td>
                 {% if col.is_id %}
-                    <a class="text-warning" href="{% url update_url pk=col.value %}">
+                    <a class="text-warning" href="{% url 'update_view' model_name=title pk=col.value %}">
                         <span class="far fa-edit"></span>
                     </a> &nbsp;
                     {% if delete_button %}
-                        <a class="text-danger" href="{% url delete_url pk=col.value %}">
+                        <a class="text-danger" href="{% url 'delete_view' model_name=title pk=col.value %}">
                             <span class="far fa-trash-alt"></span>
                         </a>
                     {% endif %}

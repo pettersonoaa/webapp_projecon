@@ -14,11 +14,162 @@ COLUMNS = {
 
 
 # make table data for add template
-def MakeTableDict (model, col_names=[]):
-    table = {
-        'cols': col_names,
-        'rows': []
-    }
+def MakeTableDict (model_name, user):
+
+    table = {'cols': [], 'rows': []}
+
+    from .models import Account, Category, Subcategory, Rule, Budget, Transaction
+    # account
+    if model_name == 'account':
+        table['cols'] = [
+            'Category', 
+            'Order', 
+            'ID'
+        ]
+        model = Account.objects.filter(user = user).values(
+            'name', 
+            'acc_type', 
+            'value', 
+            'is_active', 
+            'detail', 
+            'order', 
+            'id'
+        ).order_by(
+            'order', 
+            'name'
+        )
+    # category
+    elif model_name == 'category':
+        table['cols'] = [
+            'Category', 
+            'Order', 
+            'ID']
+        model = Category.objects.filter(user = user).values(
+            'name', 
+            'order', 
+            'id'
+        ).order_by(
+            'order', 
+            'name'
+        )
+    # subcategory
+    elif model_name == 'subcategory':
+        table['cols'] = [
+            'Category', 
+            'Subcategory', 
+            'Share bill', 
+            'Active', 
+            'Seassonal', 
+            'Details', 
+            'Order', 
+            'ID'
+        ]
+        model = Subcategory.objects.filter(user = user).values(
+            'category__name', 
+            'name', 
+            'is_shared', 
+            'is_active', 
+            'is_seassonal', 
+            'detail', 
+            'order', 
+            'id'
+        ).order_by(
+            'category__order', 
+            'order', 
+            'category__name', 
+            'name'
+        )
+    # rule
+    elif model_name == 'rule':
+        table['cols'] = [
+            'Acc.',
+            'Category',
+            'Subcat.', 
+            'IO',
+            'Rule', 
+            'Category',
+            'Target', 
+            'IO',
+            'Coeff.', 
+            'Const.', 
+            'Order',
+            'Detail', 
+            'ID'
+        ]
+        model = Rule.objects.filter(user=user).values(
+            'account__name',
+            'subcategory__category__name',
+            'subcategory__name', 
+            'io_type',
+            'rule_type', 
+            'target__category__name',
+            'target__name', 
+            'target_io_type',
+            'coefficient', 
+            'constant', 
+            'order',
+            'detail', 
+            'id'
+        ).order_by(
+            'account__order',
+            'account__name',
+            'subcategory__category__order', 
+            'subcategory__category__name', 
+            'subcategory__order', 
+            'subcategory__name', 
+            'order'
+        )
+    elif model_name == 'budget':
+        table['cols'] = [
+            'Account', 
+            'Category', 
+            'Subcategory', 
+            'Io type', 
+            'Value', 
+            'Date', 
+            'ID'
+        ]
+        model = Budget.objects.filter(user=user).values(
+            'account__name', 
+            'subcategory__category__name', 
+            'subcategory__name', 
+            'io_type', 
+            'value', 
+            'date', 
+            'id'
+        ).order_by(
+            '-date', 
+            'io_type', 
+            'account__order', 
+            'subcategory__category__order', 
+            'subcategory__order'
+        )
+    elif model_name == 'transaction':
+        table['cols'] = [
+            'Account', 
+            'Category', 
+            'Subcategory', 
+            'Io type', 
+            'Value', 
+            'Date', 
+            'ID'
+        ]
+        model = Transaction.objects.filter(user=user).values(
+            'account__name', 
+            'subcategory__category__name', 
+            'subcategory__name', 
+            'io_type', 
+            'value', 
+            'date', 
+            'id'
+        ).order_by(
+            '-date', 
+            'io_type', 
+            'account__order', 
+            'subcategory__category__order', 
+            'subcategory__order'
+        )
+
     i = 0
     for cols in model:
         row_list = []
@@ -31,6 +182,23 @@ def MakeTableDict (model, col_names=[]):
         table['rows'].append(row_list)
         i += 1
     return table
+
+
+def MakeCustomForm (user, custom=[]):
+    custom_form = {}
+    if 'account' in custom:
+        from .models import Account
+        custom_form['account'] = Account.objects.filter(user=user).order_by('order', 'name')
+    if 'category' in custom:
+        from .models import Category
+        custom_form['category'] = Category.objects.filter(user=user).order_by('order', 'name')
+    if 'subcategory' in custom:
+        from .models import Subcategory
+        custom_form['subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
+    if 'target' in custom:
+        from .models import Subcategory
+        custom_form['subcategory'] = Subcategory.objects.filter(user=user).order_by('category__order', 'category__name', 'order', 'name')
+    return custom_form
 
 
 # extract data from models by user and account

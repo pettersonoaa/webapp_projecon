@@ -9,7 +9,7 @@
         <nav class="navbar navbar-expand-md fixed-top navbar-light bg-light">
             <ul class="navbar-nav">
                 <li>
-                    <a class="nav-link active" style="display:inline-block;" href="{% url 'monthly_view' %}"><strong><span class="fas fa-balance-scale"></span> View</strong></a>
+                    <a class="nav-link active" style="display:inline-block;" href="{% url 'index_view' period='monthly' %}"><strong><span class="fas fa-balance-scale"></span> View</strong></a>
                 </li>
             </ul>
             &nbsp;
@@ -19,22 +19,22 @@
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add_account_view' %}"><small><span class="fas fa-landmark"></span></small> Account</a>
+                        <a class="nav-link" href="{% url 'create_view' model_name='account' %}"><small><span class="fas fa-landmark"></span></small> Account</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add_category_view' %}"><small><span class="fas fa-book"></span></small> Category</a>
+                        <a class="nav-link" href="{% url 'create_view' model_name='category' %}"><small><span class="fas fa-book"></span></small> Category</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add_subcategory_view' %}"><small><span class="fas fa-receipt"></span></small> Subcategory</a>
+                        <a class="nav-link" href="{% url 'create_view' model_name='subcategory' %}"><small><span class="fas fa-receipt"></span></small> Subcategory</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add_transaction_view' %}"><small><span class="far fa-money-bill"></span></small> Transaction</span></a>
+                        <a class="nav-link" href="{% url 'create_view' model_name='transaction' %}"><small><span class="far fa-money-bill"></span></small> Transaction</span></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add_budget_view' %}"><small><span class="fas fa-wallet"></span></small> Budget</a>
+                        <a class="nav-link" href="{% url 'create_view' model_name='budget' %}"><small><span class="fas fa-wallet"></span></small> Budget</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add_rule_view' %}"><small><span class="fas fa-calculator"></span></small> rule</a>
+                        <a class="nav-link" href="{% url 'create_view' model_name='rule' %}"><small><span class="fas fa-calculator"></span></small> rule</a>
                     </li>
                     &nbsp;
                     <li class="nav-item">
