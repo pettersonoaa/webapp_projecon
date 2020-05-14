@@ -24,9 +24,6 @@ COLUMNS = {
 }
 
 
-def ReturnError (error_msg):
-    return render(request, 'budget/error.html', {'error_msg': error_msg})
-
 
 # make table for create and list template
 def MakeTableDict (model_name, model):

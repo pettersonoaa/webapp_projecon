@@ -47,7 +47,6 @@ FORM = {
 }
 
 from .functions import (
-    ReturnError,
     MakeTableDict,
     MakeCustomForm,
     PopulateBudgetDate,
@@ -103,7 +102,7 @@ def index_view(request, period):
     try:
         context['populate_budget'] = PopulateBudgetDate(user=user)
     except:
-        ReturnError('Cant render table yet. Add budget data first')
+        return render(request, 'budget/error.html', {'error_msg': 'Cant render table yet. Add budget data first'})
 
     try:
         # create tables by account (main tables)
@@ -240,6 +239,6 @@ def list_view(request, model_name, period, io_type, subcategory_name, year, mont
         # get columns by model to render
         context['table'] = MakeTableDict(model_name=model_name, model=model)
     except:
-        ReturnError('No data available, check your '+str(model_name)+'s.')
+        return render(request, 'budget/error.html', {'error_msg': 'No data available, check your '+str(model_name)+'s.'})
     
     return render(request, 'budget/add.html', context=context)
