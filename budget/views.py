@@ -47,6 +47,7 @@ FORM = {
 }
 
 from .functions import (
+    ReturnError,
     MakeTableDict,
     MakeCustomForm,
     PopulateBudgetDate,
@@ -102,8 +103,7 @@ def index_view(request, period):
     try:
         context['populate_budget'] = PopulateBudgetDate(user=user)
     except:
-        context = {'error_msg': 'Cant render table yet: add some Budget first'}
-        return render(request, 'budget/error.html', context)
+        ReturnError('Cant render table yet. Add budget data first')
 
     try:
         # create tables by account (main tables)
@@ -112,8 +112,7 @@ def index_view(request, period):
         # create available table, grouping data by account type
         context['available'] = AvailableTypeAccount(user=user, month=month)
     except:
-        context = {'error_msg': 'Cant render table yet: add some Account, Category, Subcategory or Transaction'}
-        return render(request, 'budget/error.html', context)
+        ReturnError('Cant render table yet. Add some data first: account, category, subcategory, transaction')
 
     # create shared bills table, using is_shared flag from subcategory
     try:
@@ -214,32 +213,33 @@ def delete_view(request, model_name, pk):
 @login_required
 def list_view(request, model_name, period, io_type, subcategory_name, year, month):
 
-    # initialize and filter model
-    model = MODEL[model_name].objects.filter(
-        user=request.user,
-        io_type=io_type,
-        date__year=year
-    )
-
-    # add month filter
-    if period != 'yearly':
-        model = model.filter(
-            date__month=month
-        )
-
-    # add subcategory filter
-    if subcategory_name != 'io_type_total':
-        model = model.filter(
-            subcategory__name=subcategory_name
-        )
-
-    # make table to render
-    table = MakeTableDict(model_name=model_name, model=model)
-    
-    # render
+    # set parameters
     context = {
-        'title': model_name, 
-        'table': table,
+        'title': model_name,
         'delete_button': ALLOW_DELETE_BUTTON[model_name]
     }
+
+    try:
+        # initialize and filter model
+        model = MODEL[model_name].objects.filter(
+            user=request.user,
+            io_type=io_type,
+            date__year=year
+        )
+
+        # add month and subcategory filter
+        if period != 'yearly':
+            model = model.filter(
+                date__month=month
+            )
+        if subcategory_name != 'io_type_total':
+            model = model.filter(
+                subcategory__name=subcategory_name
+            )
+        
+        # get columns by model to render
+        context['table'] = MakeTableDict(model_name=model_name, model=model)
+    except:
+        ReturnError('No data available, check your '+str(model_name)+'s.')
+    
     return render(request, 'budget/add.html', context=context)
